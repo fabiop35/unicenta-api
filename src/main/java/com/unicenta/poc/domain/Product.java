@@ -1,18 +1,22 @@
 package com.unicenta.poc.domain;
 
-import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.time.LocalDate;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.util.UUID;
 
-@Entity
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @Table(name = "products")
 @Data
 @NoArgsConstructor
-public class Product {
+public class Product implements Persistable<String> {
 
     @Id
     private String id;
@@ -22,10 +26,10 @@ public class Product {
     private double pricesell;
     private double pricebuy;
 
-    @Column(name = "CATEGORY")
+    @Column("category")
     private String categoryId;
 
-    @Column(name = "TAXCAT")
+    @Column("taxcat")
     private String taxcatId;
 
     private boolean iscom = false;
@@ -47,14 +51,18 @@ public class Product {
     Date now = new Date();
     Timestamp memodate = new Timestamp(now.getTime());
     UUID value = UUID.randomUUID();
-    @Column(name = "CATEGORY_ID")
+    @Column("category_id")
     UUID categoryIdNotKey = UUID.randomUUID();
     String currency = "NDF";
-    @Column(name = "tax_category_id")
+    @Column("tax_category_id")
     String taxCategoryId = "NULL";
+    
+    @Transient // This field will NOT be mapped to a database column
+    private boolean isNewProduct = true;
 
     public Product(String reference, String code, String name, double pricesell, double pricebuy,
             String categoryId, String taxcatId, String display) {
+        
         this.id = UUID.randomUUID().toString();
         this.reference = reference;
         this.code = code;
@@ -64,5 +72,17 @@ public class Product {
         this.categoryId = categoryId;
         this.taxcatId = taxcatId;
         this.display = display;
+        
+        this.isNewProduct = true;
+    }
+    
+    @Override
+    public boolean isNew() {
+        // Return true if this is a newly created entity, false if loaded from DB
+        return isNewProduct;
+    }
+    
+    public void markNotNew() {
+        this.isNewProduct = false;
     }
 }

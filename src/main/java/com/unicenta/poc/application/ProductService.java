@@ -2,7 +2,7 @@ package com.unicenta.poc.application;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+//import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -55,7 +55,7 @@ public class ProductService {
         List<String> categoryIds = products.stream()
                 .map(Product::getCategoryId)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         // 2. Fetch all corresponding categories in a single database query.
         Map<String, String> categoryMap = categoryRepository.findAllById(categoryIds).stream()
@@ -78,6 +78,10 @@ public class ProductService {
                     dto.setCategoryName(categoryMap.getOrDefault(product.getCategoryId(), "N/A"));
                     return dto;
                 }).collect(Collectors.toList());
+        // 3. Map in memory. This is the standard, efficient pattern for Spring Data JDBC.
+//        return products.stream()
+//                .map(product -> mapToProductResponseDto(product, categoryMap.get(product.getCategoryId())))
+//                .collect(Collectors.toList());
     }
 
     /*public ProductResponseDto getProductByIdOld(String id) {
@@ -143,6 +147,32 @@ public class ProductService {
         dto.setTaxcatId(product.getTaxcatId());
         dto.setCategoryName(categoryName);
         return dto;
+    }
+
+    @Transactional
+    public Product updateProduct(String id, ProductDto dto) {
+        // Ensure the product exists before trying to update
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+
+        // Validate foreign keys exist
+        if (!categoryRepository.existsById(dto.getCategoryId())) {
+            throw new ResourceNotFoundException("Cannot update product. Category with ID " + dto.getCategoryId() + " not found.");
+        }
+        // A similar check for TaxCategoryRepository would go here
+
+        // Map DTO fields to the existing product entity
+        product.setName(dto.getName());
+        product.setReference(dto.getReference());
+        product.setCode(dto.getCode());
+        product.setDisplay(dto.getDisplay());
+        product.setPricebuy(dto.getPricebuy());
+        product.setPricesell(dto.getPricesell());
+        product.setCategoryId(dto.getCategoryId());
+        product.setTaxcatId(dto.getTaxcatId());
+        product.markNotNew();
+
+        return productRepository.save(product);
     }
 
 }

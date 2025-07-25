@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class NameDto {
 
-    @NotBlank(message = "Name is mandatory")
+    @NotBlank(message = "El nombre es obligatorio")
     private String name;
 }

@@ -30,4 +30,9 @@ public class CategoryController {
     public ResponseEntity<List<Category>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Category> updateCategory(@PathVariable String id, @Valid @RequestBody NameDto dto) {
+        return ResponseEntity.ok(categoryService.updateCategory(id, dto.getName()));
+    }
 }

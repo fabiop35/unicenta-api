@@ -1,10 +1,14 @@
 package com.unicenta.poc.application;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.unicenta.poc.domain.Tax;
 import com.unicenta.poc.domain.TaxRepository;
+import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
 import com.unicenta.poc.interfaces.dto.TaxDto;
-import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class TaxService {
@@ -22,5 +26,20 @@ public class TaxService {
 
     public List<Tax> getAllTaxes() {
         return taxRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Tax getTaxById(String id) {
+        return taxRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+    }
+
+    @Transactional
+    public Tax updateTax(String id, TaxDto dto) {
+        Tax tax = getTaxById(id);
+        tax.setName(dto.getName());
+        tax.setRate(dto.getRate());
+        tax.setCategoryId(dto.getCategoryId());
+        return taxRepository.save(tax);
     }
 }

@@ -1,7 +1,10 @@
 package com.unicenta.poc.interfaces.exceptions;
 
-import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.data.relational.core.conversion.DbActionExecutionException;
+import org.springframework.dao.DuplicateKeyException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -14,9 +17,12 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
+
 /**
- * A central place to handle exceptions across the whole application.
- * This controller advice will catch exceptions and return a structured JSON error response.
+ * A central place to handle exceptions across the whole application. This
+ * controller advice will catch exceptions and return a structured JSON error
+ * response.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -30,7 +36,7 @@ public class GlobalExceptionHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        
+
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -46,7 +52,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleSqlIntegrityException(SQLIntegrityConstraintViolationException ex, HttpServletRequest request) {
         String message = "A record with the same unique value (e.g., name, code, or reference) already exists.";
-        
+
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
@@ -54,6 +60,36 @@ public class GlobalExceptionHandler {
                 message,
                 request.getRequestURI()
         );
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateKeyException(DuplicateKeyException ex, HttpServletRequest request) {
+        String message = "***A record with the same unique value (e.g., name, code, or reference) already exists.";
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                message,
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DbActionExecutionException.class)
+    public ResponseEntity<ErrorResponse> handleDbActionExecutionException(DbActionExecutionException ex, HttpServletRequest request) {
+        String message = "Err.DbActionExecutionException: A record with the same unique value (e.g., name, code, or reference) already exists.";
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                message,
+                request.getRequestURI()
+        );
+        ex.printStackTrace();
+
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
@@ -75,7 +111,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
         // Log the full stack trace for internal server errors for debugging purposes
         ex.printStackTrace();
-        
+
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
