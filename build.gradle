@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.3'
 	id 'io.spring.dependency-management' version '1.1.7'
+        id 'org.asciidoctor.jvm.convert' version '3.3.2'
 }
 
 group = 'com.unicenta.poc'
@@ -23,6 +24,14 @@ repositories {
 	mavenCentral()
 }
 
+ext {
+    // Define a variable for spring-restdocs.version
+    set('springRestdocsVersion', '3.2.5')
+    // Define snippetsDir here for global access
+    snippetsDir = layout.buildDirectory.dir('generated-snippets').get().asFile
+}
+
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -31,9 +40,54 @@ dependencies {
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+        testImplementation 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+        outputs.dir snippetsDir
+        // Pass snippetsDir to your tests as a system property, if your tests expect it
+        systemProperty 'org.springframework.restdocs.outputDir', snippetsDir.absolutePath
+}
+
+// Configuration for Asciidoctor
+def generatedDocsDir = layout.buildDirectory.dir('generated-docs').get().asFile
+def staticDocsDir = layout.buildDirectory.dir('resources/main/static/docs').get().asFile
+
+// Define the asciidoctor extensions configuration BEFORE the asciidoctor task itself.
+// This is a standard Gradle configuration like 'implementation', but for the Asciidoctor plugin's use.
+configurations {
+    asciidoctorExtensions // This is a convention name for the configuration by the plugin
+}
+
+// Add the Spring RestDocs Asciidoctor dependency to this configuration
+dependencies {
+    asciidoctorExtensions "org.springframework.restdocs:spring-restdocs-asciidoctor:${springRestdocsVersion}"
+}
+
+asciidoctor {
+    // Make sure the asciidoctor task depends on the test task to ensure snippets are generated
+    dependsOn tasks.named('test')
+    inputs.dir snippetsDir // The asciidoctor task reads from this directory
+
+    sources {
+        include 'index.adoc' // Your main AsciiDoc file
+    }
+    attributes 'doctype': 'book',
+               'backend': 'html5',
+               'source-highlighter': 'rouge'
+    outputDir = generatedDocsDir
+}
+
+
+tasks.register('copyRestDocs', Copy) {
+    dependsOn asciidoctor
+    from generatedDocsDir
+    into staticDocsDir
+}
+
+tasks.named('bootJar') {
+    dependsOn copyRestDocs
 }

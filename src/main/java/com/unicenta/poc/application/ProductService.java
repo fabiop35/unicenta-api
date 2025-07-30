@@ -2,9 +2,11 @@ package com.unicenta.poc.application;
 
 import java.util.List;
 import java.util.Map;
-//import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,75 +45,51 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    /**
+     * Retrieves a paginated list of all products, enriching them with category
+     * names.
+     *
+     * @param pageable The pagination information (page number, size, and sort).
+     * @return A Page of ProductResponseDto.
+     */
     @Transactional(readOnly = true)
-    public List<ProductResponseDto> getAllProducts() {
-        //return productRepository.findAll();
-        List<Product> products = productRepository.findAll();
-        if (products.isEmpty()) {
-            return List.of();
-        }
+    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
 
-        // 1. Collect all unique category IDs from the products list.
-        List<String> categoryIds = products.stream()
+        // 1. Fetch the paginated products from the database
+        Page<Product> productPage = productRepository.findAll(pageable);
+        List<Product> productsOnPage = productPage.getContent();
+  
+        // 2. Get all unique category IDs from the current page of products
+        List<String> categoryIds = productsOnPage.stream()
                 .map(Product::getCategoryId)
                 .distinct()
                 .toList();
 
-        // 2. Fetch all corresponding categories in a single database query.
+        // 3. Fetch all necessary categories in a single query
         Map<String, String> categoryMap = categoryRepository.findAllById(categoryIds).stream()
                 .collect(Collectors.toMap(Category::getId, Category::getName));
 
-        // 3. Map the Product entities to ProductResponseDto, enriching with the category name.
-        return products.stream()
-                .map(product -> {
-                    ProductResponseDto dto = new ProductResponseDto();
-                    dto.setId(product.getId());
-                    dto.setName(product.getName());
-                    dto.setReference(product.getReference());
-                    dto.setCode(product.getCode());
-                    dto.setPricesell(product.getPricesell());
-                    dto.setPricebuy(product.getPricebuy());
-                    dto.setDisplay(product.getDisplay());
-                    dto.setCategoryId(product.getCategoryId());
-                    dto.setTaxcatId(product.getTaxcatId());
-                    // Get the category name from the map, providing a default if not found.
-                    dto.setCategoryName(categoryMap.getOrDefault(product.getCategoryId(), "N/A"));
-                    return dto;
-                }).collect(Collectors.toList());
-        // 3. Map in memory. This is the standard, efficient pattern for Spring Data JDBC.
-//        return products.stream()
-//                .map(product -> mapToProductResponseDto(product, categoryMap.get(product.getCategoryId())))
-//                .collect(Collectors.toList());
+        // 4. Map the Product entities to ProductResponseDto
+       List<ProductResponseDto> dtos = productsOnPage.stream().map(product -> {
+            ProductResponseDto dto = new ProductResponseDto();
+            dto.setId(product.getId());
+            dto.setName(product.getName());
+            dto.setReference(product.getReference());
+            dto.setCode(product.getCode());
+            dto.setCodetype(product.getCodetype());
+            dto.setPricesell(product.getPricesell());
+            dto.setPricebuy(product.getPricebuy());
+            dto.setDisplay(product.getDisplay());
+            dto.setCategoryId(product.getCategoryId());
+            dto.setTaxcatId(product.getTaxcatId());
+            // Get the category name from the map, providing a default if not found.
+            dto.setCategoryName(categoryMap.getOrDefault(product.getCategoryId(), "N/A"));
+            return dto;
+        }).collect(Collectors.toList());
+
+        return new PageImpl<>(dtos, pageable, productPage.getTotalElements());
     }
 
-    /*public ProductResponseDto getProductByIdOld(String id) {
-
-        Optional<Product> product = productRepository.findById(id);
-        if (product.isEmpty()) {
-            return new ProductResponseDto();
-        }
-
-        Map<String, String> categoryMap = categoryRepository.findById(product.get().getCategoryId()).stream()
-                .collect(Collectors.toMap(Category::getId, Category::getName));
-
-        ProductResponseDto dto = new ProductResponseDto();
-        dto.setId(product.get().getId());
-        dto.setName(product.get().getName());
-        dto.setReference(product.get().getReference());
-        dto.setCode(product.get().getCode());
-        dto.setPricesell(product.get().getPricesell());
-        dto.setPricebuy(product.get().getPricebuy());
-        dto.setDisplay(product.get().getDisplay());
-        dto.setCategoryId(product.get().getCategoryId());
-        dto.setTaxcatId(product.get().getTaxcatId());
-        // Get the category name from the map, providing a default if not found.
-        dto.setCategoryName(categoryMap.getOrDefault(product.get().getCategoryId(), "N/A"));
-        return dto;
-
-
-        //return productRepository.findById(id)
-              //  .orElseThrow(() -> new RuntimeException(">>> Product not found with id: " + id)); 
-    }*/
     /**
      * Fetches a single product by its ID and throws a custom exception if not
      * found.
@@ -140,6 +118,7 @@ public class ProductService {
         dto.setName(product.getName());
         dto.setReference(product.getReference());
         dto.setCode(product.getCode());
+        dto.setCodetype(product.getCodetype());
         dto.setPricesell(product.getPricesell());
         dto.setPricebuy(product.getPricebuy());
         dto.setDisplay(product.getDisplay());

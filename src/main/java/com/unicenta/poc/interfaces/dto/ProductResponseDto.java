@@ -11,11 +11,12 @@ public class ProductResponseDto {
     private String id;
     private String reference;
     private String code;
+    private String codetype;
     private String name;
     private double pricesell;
     private double pricebuy;
     private String categoryId;
-    private String categoryName; // <-- The new field with the category name
+    private String categoryName; 
     private String taxcatId;
     private String display;
 }

@@ -3,7 +3,10 @@ package com.unicenta.poc.domain;
 import java.util.UUID;
 
 import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+
+import com.fasterxml.jackson.annotation.JsonIgnore; 
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -12,12 +15,15 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Table(name = "categories")
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 public class Category implements Persistable<String> {
 
     @Id
     private String id;
     private String name;
+    
+    @JsonIgnore
     UUID value = UUID.randomUUID();
 
     @Transient
@@ -30,6 +36,7 @@ public class Category implements Persistable<String> {
     }
 
     @Override
+    @JsonIgnore
     public boolean isNew() {
         return isNewProduct;
     }

@@ -1,9 +1,9 @@
 package com.unicenta.poc.interfaces;
 
-import java.util.List;
-
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +32,8 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<Page<ProductResponseDto>> getAllProducts(Pageable pageable) {
+        return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 
     /**
@@ -50,6 +50,8 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable String id, @Valid @RequestBody ProductDto dto) {
+        System.out.println(">>> ProductController.id: " + id);
+        System.out.println(">>> ProductController.reference: " + dto.getReference());
         return ResponseEntity.ok(productService.updateProduct(id, dto));
     }
 }

@@ -1,9 +1,7 @@
-# This property tells Spring Data JDBC to create the schema on startup for H2
-spring.sql.init.mode=always
-*/
-
 // =================================================================
-// File: src/test/resources/schema.sql (NEW FILE for tests)
+// This property tells Spring Data JDBC to create the schema on startup for H2
+//
+// File: src/test/resources/schema.sql
 // Description: Defines the schema for the H2 in-memory database during tests.
 // Spring Data JDBC requires this for the `create-drop` equivalent.
 // =================================================================
@@ -35,19 +33,42 @@ CREATE TABLE products (
     id VARCHAR(255) PRIMARY KEY,
     reference VARCHAR(255) NOT NULL UNIQUE,
     code VARCHAR(255) NOT NULL UNIQUE,
+    codetype VARCHAR(255) DEFAULT 'EAN-13',
     name VARCHAR(255) NOT NULL,
     pricesell DOUBLE PRECISION NOT NULL,
     pricebuy DOUBLE PRECISION NOT NULL,
     category VARCHAR(255) NOT NULL,
     taxcat VARCHAR(255) NOT NULL,
+    attributeset_id varchar(255),
+    attributes BLOB, 
     iscom BOOLEAN DEFAULT FALSE,
     isscale BOOLEAN DEFAULT FALSE,
+    isconstant BOOLEAN NOT NULL DEFAULT FALSE,
+    printkb BOOLEAN NOT NULL DEFAULT FALSE,
     display VARCHAR(255),
+    isvprice BOOLEAN NOT NULL DEFAULT FALSE,
+    isverpatrib DOUBLE,
+    texttip VARCHAR(255),
+    warranty DOUBLE,
     stockcost DOUBLE PRECISION DEFAULT 0,
     stockvolume DOUBLE PRECISION DEFAULT 0,
+    image BLOB,
+    sendstatus BOOLEAN NOT NULL DEFAULT FALSE,
+    isservice BOOLEAN NOT NULL DEFAULT FALSE,
     stockunits DOUBLE PRECISION DEFAULT 0,
-    isvprice BOOLEAN DEFAULT FALSE,
-    codetype VARCHAR(255) DEFAULT 'EAN-13',
+    printto INTEGER NOT NULL DEFAULT 0,
+    supplier VARCHAR(255),
+    uom INTEGER NOT NULL DEFAULT 0,
+    memodate TIMESTAMP(6),
+    "value" BINARY(16) NOT NULL DEFAULT RANDOM_UUID(), -- **FIXED FOR H2**
+    price_buy DECIMAL(38,2),
+    currency_buy VARCHAR(3),
+    price_sell DECIMAL(38,2),
+    currency_sell VARCHAR(3),
+    category_id BINARY(16) NOT NULL DEFAULT RANDOM_UUID(), -- **FIXED FOR H2**
+    currency VARCHAR(255),
+    tax_category_id VARCHAR(255) NOT NULL DEFAULT '', 
+    now TIMESTAMP(6),
     FOREIGN KEY (category) REFERENCES categories(id),
     FOREIGN KEY (taxcat) REFERENCES taxcategories(id)
 );
