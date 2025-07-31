@@ -18,6 +18,7 @@ import com.unicenta.poc.domain.TaxCategoryRepository;
 import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
 import com.unicenta.poc.interfaces.dto.ProductDto;
 import com.unicenta.poc.interfaces.dto.ProductResponseDto;
+import java.util.ArrayList;
 
 @Service
 public class ProductService {
@@ -58,7 +59,7 @@ public class ProductService {
         // 1. Fetch the paginated products from the database
         Page<Product> productPage = productRepository.findAll(pageable);
         List<Product> productsOnPage = productPage.getContent();
-  
+
         // 2. Get all unique category IDs from the current page of products
         List<String> categoryIds = productsOnPage.stream()
                 .map(Product::getCategoryId)
@@ -70,7 +71,7 @@ public class ProductService {
                 .collect(Collectors.toMap(Category::getId, Category::getName));
 
         // 4. Map the Product entities to ProductResponseDto
-       List<ProductResponseDto> dtos = productsOnPage.stream().map(product -> {
+        List<ProductResponseDto> dtos = productsOnPage.stream().map(product -> {
             ProductResponseDto dto = new ProductResponseDto();
             dto.setId(product.getId());
             dto.setName(product.getName());
@@ -107,6 +108,34 @@ public class ProductService {
                 .orElse("N/A");
 
         return mapToProductResponseDto(product, categoryName);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getProductByName(String name) {
+        List<Product> products = productRepository.findTop10ByNameContainingIgnoreCase(name);
+        List<ProductResponseDto> productsDtos = new ArrayList<>();
+        products.forEach(
+                (Product e) -> {
+                    //System.out.println(e);
+                    String categoryName = categoryRepository.findById(e.getCategoryId())
+                            .map(Category::getName)
+                            .orElse("N/A");
+                    ProductResponseDto dto = new ProductResponseDto();
+                    dto.setId(e.getId());
+                    dto.setName(e.getName());
+                    dto.setReference(e.getReference());
+                    dto.setCode(e.getCode());
+                    dto.setCodetype(e.getCodetype());
+                    dto.setPricesell(e.getPricesell());
+                    dto.setPricebuy(e.getPricebuy());
+                    dto.setDisplay(e.getDisplay());
+                    dto.setCategoryId(e.getCategoryId());
+                    dto.setTaxcatId(e.getTaxcatId());
+                    dto.setCategoryName(categoryName);
+                    productsDtos.add(dto);
+                });
+
+        return productsDtos;
     }
 
     /**

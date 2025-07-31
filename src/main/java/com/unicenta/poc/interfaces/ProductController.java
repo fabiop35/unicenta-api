@@ -12,10 +12,11 @@ import com.unicenta.poc.application.ProductService;
 import com.unicenta.poc.domain.Product;
 import com.unicenta.poc.interfaces.dto.ProductDto;
 import com.unicenta.poc.interfaces.dto.ProductResponseDto;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/products")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200, http://192.168.10.3:4200")
 public class ProductController {
 
     private final ProductService productService;
@@ -45,7 +46,14 @@ public class ProductController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable String id) {
+        System.out.println(">>> ProductController.getProductById.id: "+id +" <<<");
         return ResponseEntity.ok(productService.getProductById(id));
+    }
+    
+    @GetMapping("/search")
+    public List<ProductResponseDto> getProductByName(@RequestParam(name = "name", required = false) String name) {
+        System.out.println(">>> ProductController.getProductByName.name: "+name +" <<<");
+        return productService.getProductByName(name);
     }
 
     @PutMapping("/{id}")
