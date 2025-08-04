@@ -6,11 +6,11 @@ import lombok.Data;
 @Data
 public class TaxDto {
 
-    @NotBlank(message = "Name is mandatory")
+    @NotBlank(message = "EL nombre es obligatorio")
     private String name;
-    @NotBlank(message = "Category ID is mandatory")
-    private String categoryId;
+    @NotBlank(message = "La categori del impuesto es obligatoria")
+    private String taxcatId;
     @NotNull
-    @PositiveOrZero(message = "Rate must be positive or zero")
+    @PositiveOrZero(message = "La tase debse ser positiva o cero")
     private Double rate;
 }

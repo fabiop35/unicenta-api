@@ -1,5 +1,7 @@
 package com.unicenta.poc.interfaces;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -12,7 +14,7 @@ import com.unicenta.poc.application.ProductService;
 import com.unicenta.poc.domain.Product;
 import com.unicenta.poc.interfaces.dto.ProductDto;
 import com.unicenta.poc.interfaces.dto.ProductResponseDto;
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/products")

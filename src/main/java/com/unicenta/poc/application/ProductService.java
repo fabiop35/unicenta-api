@@ -1,5 +1,6 @@
 package com.unicenta.poc.application;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ import com.unicenta.poc.domain.TaxCategoryRepository;
 import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
 import com.unicenta.poc.interfaces.dto.ProductDto;
 import com.unicenta.poc.interfaces.dto.ProductResponseDto;
-import java.util.ArrayList;
+
 
 @Service
 public class ProductService {

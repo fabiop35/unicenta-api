@@ -20,7 +20,7 @@ public class TaxService {
     }
 
     public Tax createTax(TaxDto dto) {
-        Tax tax = new Tax(dto.getName(), dto.getCategoryId(), dto.getRate());
+        Tax tax = new Tax(dto.getName(), dto.getTaxcatId(), dto.getRate());
         return taxRepository.save(tax);
     }
 
@@ -39,7 +39,8 @@ public class TaxService {
         Tax tax = getTaxById(id);
         tax.setName(dto.getName());
         tax.setRate(dto.getRate());
-        tax.setCategoryId(dto.getCategoryId());
+        tax.setTaxcatId(dto.getTaxcatId());
+        tax.markNotNew();
         return taxRepository.save(tax);
     }
 }

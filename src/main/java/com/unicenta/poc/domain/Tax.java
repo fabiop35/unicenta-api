@@ -19,18 +19,19 @@ public class Tax implements Persistable<String> {
     @Id
     private String id;
     private String name;
+    
     @Column("category")
-    private String categoryId;
+    private String taxcatId;
     private double rate;
     UUID value = UUID.randomUUID();
     
     @Transient
     private boolean isNewProduct = true;
 
-    public Tax(String name, String categoryId, double rate) {
+    public Tax(String name, String taxcatId, double rate) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
-        this.categoryId = categoryId;
+        this.taxcatId = taxcatId;
         this.rate = rate;
     }
 

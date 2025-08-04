@@ -1,7 +1,6 @@
 package com.unicenta.poc.application;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,12 +37,14 @@ public class CategoryService {
      * Updates an existing category's name.
      *
      * @param id
+     * @param newName
      * @return
      */
     @Transactional
     public Category updateCategory(String id, String newName) {
         Category category = getCategoryById(id); // Reuse getById to handle the not-found case
         category.setName(newName);
+        category.markNotNew();
         return categoryRepository.save(category);
     }
 

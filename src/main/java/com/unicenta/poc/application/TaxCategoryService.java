@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
 import com.unicenta.poc.domain.TaxCategory;
 import com.unicenta.poc.domain.TaxCategoryRepository;
-import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
 
 @Service
 public class TaxCategoryService {
@@ -31,6 +31,7 @@ public class TaxCategoryService {
     public TaxCategory updateTaxCategory(String id, String newName) {
         TaxCategory taxCategory = getTaxCategoryById(id);
         taxCategory.setName(newName);
+        taxCategory.markNotNew();
         return taxCategoryRepository.save(taxCategory);
     }
 
