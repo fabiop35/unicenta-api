@@ -73,3 +73,29 @@ CREATE TABLE products (
     FOREIGN KEY (taxcat) REFERENCES taxcategories(id)
 );
 
+DROP TABLE IF EXISTS suppliers;
+
+CREATE TABLE suppliers (
+    id        VARCHAR(255) PRIMARY KEY,
+    searchkey VARCHAR(255) NOT NULL UNIQUE,
+    taxid     VARCHAR(255),
+    name      VARCHAR(255) NOT NULL,
+    maxdebt   DOUBLE PRECISION NOT NULL DEFAULT 0,
+    address   VARCHAR(255),
+    address2  VARCHAR(255),
+    postal    VARCHAR(255),
+    city      VARCHAR(255),
+    region    VARCHAR(255),
+    country   VARCHAR(255),
+    firstname VARCHAR(255),
+    lastname  VARCHAR(255),
+    email     VARCHAR(255),
+    phone     VARCHAR(255),
+    phone2    VARCHAR(255),
+    fax       VARCHAR(255),
+    notes     VARCHAR(255),
+    visible   BOOLEAN NOT NULL DEFAULT TRUE,
+    curdate   DATETIME,
+    curdebt   DOUBLE PRECISION DEFAULT 0,
+    vatid     VARCHAR(255)
+);
