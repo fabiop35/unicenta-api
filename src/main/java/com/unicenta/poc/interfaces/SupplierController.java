@@ -1,6 +1,7 @@
 package com.unicenta.poc.interfaces;
 
 import com.unicenta.poc.application.SupplierService;
+import com.unicenta.poc.domain.StockDiary;
 import com.unicenta.poc.domain.Supplier;
 import com.unicenta.poc.interfaces.dto.SupplierDto;
 
@@ -54,5 +55,16 @@ public class SupplierController {
     @GetMapping("/search")
     public ResponseEntity<List<Supplier>> searchSuppliers(@RequestParam String term) {
         return ResponseEntity.ok(supplierService.searchSuppliers(term));
+    }
+
+    /**
+     * Retrieves all StockDiary records for a specific supplier.
+     *
+     * @param id The ID of the supplier.
+     * @return A list of StockDiary records.
+     */
+    @GetMapping("/{id}/stockdiary")
+    public ResponseEntity<List<StockDiary>> getStockDiaryBySupplier(@PathVariable("id") String id) {
+        return ResponseEntity.ok(supplierService.getStockDiaryBySupplier(id));
     }
 }
