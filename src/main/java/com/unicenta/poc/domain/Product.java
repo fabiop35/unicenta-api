@@ -47,18 +47,27 @@ public class Product implements Persistable<String> {
     private Double isverpatrib = 0.0;
     private int printto = 1;
     private int uom = 0;
-
+    
+    @Transient
     Date now = new Date();
     Timestamp memodate = new Timestamp(now.getTime());
+    
+    @Transient
     UUID value = UUID.randomUUID();
-    @Column("category_id")
-    UUID categoryIdNotKey = UUID.randomUUID();
+    
+    /*@Column("category_id")
+    UUID categoryIdNotKey = UUID.randomUUID();*/
+    
+    @Transient
     String currency = "NDF";
-    @Column("tax_category_id")
-    String taxCategoryId = "NULL";
+    
+    /*@Column("tax_category_id")
+    String taxCategoryId = "NULL";*/
     
     @Transient // This field will NOT be mapped to a database column
     private boolean isNewProduct = true;
+    
+    
 
     public Product(String reference, String code, String name, double pricesell, double pricebuy,
             String categoryId, String taxcatId, String display) {

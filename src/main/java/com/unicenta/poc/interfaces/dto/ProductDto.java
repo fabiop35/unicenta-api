@@ -32,6 +32,6 @@ public class ProductDto {
     @NotBlank(message = "Tax Category ID is mandatory")
     private String taxcatId;
     
-    @NotBlank(message = "Display name is mandatory")
+    //@NotBlank(message = "Display name is mandatory")
     private String display;
 }

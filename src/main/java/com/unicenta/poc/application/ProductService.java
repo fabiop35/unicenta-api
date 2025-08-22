@@ -1,9 +1,11 @@
 package com.unicenta.poc.application;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -15,7 +17,9 @@ import com.unicenta.poc.domain.Category;
 import com.unicenta.poc.domain.Product;
 import com.unicenta.poc.domain.ProductRepository;
 import com.unicenta.poc.domain.CategoryRepository;
+import com.unicenta.poc.domain.Tax;
 import com.unicenta.poc.domain.TaxCategoryRepository;
+import com.unicenta.poc.domain.TaxRepository;
 import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
 import com.unicenta.poc.interfaces.dto.ProductDto;
 import com.unicenta.poc.interfaces.dto.ProductResponseDto;
@@ -27,11 +31,13 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final TaxCategoryRepository taxCategoryRepository;
+    private final TaxRepository taxRepository;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, TaxCategoryRepository taxCategoryRepository) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, TaxCategoryRepository taxCategoryRepository, TaxRepository taxRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.taxCategoryRepository = taxCategoryRepository;
+        this.taxRepository = taxRepository;
     }
 
     @Transactional
@@ -43,13 +49,13 @@ public class ProductService {
         taxCategoryRepository.findById(dto.getTaxcatId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cannot create product. Tax Category with ID " + dto.getTaxcatId() + " not found."));
 
-        Product product = new Product(dto.getReference(), dto.getCode(), dto.getName(), dto.getPricesell(), dto.getPricebuy(), dto.getCategoryId(), dto.getTaxcatId(), dto.getDisplay());
+        Product product = new Product(dto.getReference(), dto.getCode(), dto.getName(), dto.getPricesell(), dto.getPricebuy(), dto.getCategoryId(), dto.getTaxcatId(), dto.getName());
         return productRepository.save(product);
     }
 
     /**
      * Retrieves a paginated list of all products, enriching them with category
-     * names.
+     * names and tax information.
      *
      * @param pageable The pagination information (page number, size, and sort).
      * @return A Page of ProductResponseDto.
@@ -57,37 +63,55 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
 
-        // 1. Fetch the paginated products from the database
+        // Fetch the paginated products from the database
         Page<Product> productPage = productRepository.findAll(pageable);
         List<Product> productsOnPage = productPage.getContent();
-
-        // 2. Get all unique category IDs from the current page of products
-        List<String> categoryIds = productsOnPage.stream()
+        if (productsOnPage.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+        // Get all unique category IDs from the current page of products
+        Set<String> categoryIds = productsOnPage.stream()
                 .map(Product::getCategoryId)
-                .distinct()
-                .toList();
+                .collect(Collectors.toSet());
 
-        // 3. Fetch all necessary categories in a single query
+        // Fetch all necessary categories in a single query
         Map<String, String> categoryMap = categoryRepository.findAllById(categoryIds).stream()
                 .collect(Collectors.toMap(Category::getId, Category::getName));
 
-        // 4. Map the Product entities to ProductResponseDto
-        List<ProductResponseDto> dtos = productsOnPage.stream().map(product -> {
-            ProductResponseDto dto = new ProductResponseDto();
-            dto.setId(product.getId());
-            dto.setName(product.getName());
-            dto.setReference(product.getReference());
-            dto.setCode(product.getCode());
-            dto.setCodetype(product.getCodetype());
-            dto.setPricesell(product.getPricesell());
-            dto.setPricebuy(product.getPricebuy());
-            dto.setDisplay(product.getDisplay());
-            dto.setCategoryId(product.getCategoryId());
-            dto.setTaxcatId(product.getTaxcatId());
-            // Get the category name from the map, providing a default if not found.
-            dto.setCategoryName(categoryMap.getOrDefault(product.getCategoryId(), "N/A"));
-            return dto;
-        }).collect(Collectors.toList());
+        //get all the tax categories  by product
+        Set<String> taxCategoryIds = productsOnPage.stream()
+                .map(Product::getTaxcatId)
+                .collect(Collectors.toSet());
+
+        List<Tax> taxes = taxRepository.findAllByTaxcatIdIn(new ArrayList<>(taxCategoryIds));
+        Map<String, String> taxNameMap = new HashMap<>();
+        Map<String, Double> taxRateMap = new HashMap<>();
+
+        taxes.forEach(tax -> {
+            taxNameMap.put(tax.getTaxcatId(), tax.getName());
+            taxRateMap.put(tax.getTaxcatId(), tax.getRate());
+        });
+
+        //System.out.println("Printing values using forEach() with a lambda expression:");
+        //taxRateMap.forEach((key, value) -> {System.out.println(key); System.out.println(value);});
+        // Map the Product entities to ProductResponseDto
+        List<ProductResponseDto> dtos = productsOnPage.stream()
+                .map(product -> ProductResponseDto.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .reference(product.getReference())
+                .code(product.getCode())
+                .codetype(product.getCodetype())
+                .pricesell(product.getPricesell())
+                .pricebuy(product.getPricebuy())
+                .categoryId(product.getCategoryId())
+                .categoryName(categoryMap.getOrDefault(product.getCategoryId(), "Unknown"))
+                .taxcatId(product.getTaxcatId())
+                .taxName(taxNameMap.getOrDefault(product.getTaxcatId(), "No Tax"))
+                .taxRate(taxRateMap.getOrDefault(product.getTaxcatId(), 0.0))
+                .display(product.getDisplay())
+                .build())
+                .collect(Collectors.toList());
 
         return new PageImpl<>(dtos, pageable, productPage.getTotalElements());
     }
@@ -108,12 +132,44 @@ public class ProductService {
                 .map(Category::getName)
                 .orElse("N/A");
 
-        return mapToProductResponseDto(product, categoryName);
+        Tax tax = taxRepository.findByTaxcatId(product.getTaxcatId())
+                .orElse(new Tax());
+
+        return mapToProductResponseDto(product, categoryName, tax);
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponseDto> getProductByName(String name) {
+        
         List<Product> products = productRepository.findTop10ByNameContainingIgnoreCase(name);
+        List<ProductResponseDto> productsDtos = new ArrayList<>();
+        products.forEach(
+                (Product e) -> {
+                    //System.out.println(e);
+                    String categoryName = categoryRepository.findById(e.getCategoryId())
+                            .map(Category::getName)
+                            .orElse("N/A");
+                    ProductResponseDto dto = new ProductResponseDto();
+                    dto.setId(e.getId());
+                    dto.setName(e.getName());
+                    dto.setReference(e.getReference());
+                    dto.setCode(e.getCode());
+                    dto.setCodetype(e.getCodetype());
+                    dto.setPricesell(e.getPricesell());
+                    dto.setPricebuy(e.getPricebuy());
+                    dto.setDisplay(e.getDisplay());
+                    dto.setCategoryId(e.getCategoryId());
+                    dto.setTaxcatId(e.getTaxcatId());
+                    dto.setCategoryName(categoryName);
+                    productsDtos.add(dto);
+                });
+
+        return productsDtos;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getProductByCode(String code) {
+        List<Product> products = productRepository.findTop10ByCodeContainingIgnoreCase(code);
         List<ProductResponseDto> productsDtos = new ArrayList<>();
         products.forEach(
                 (Product e) -> {
@@ -142,7 +198,7 @@ public class ProductService {
     /**
      * Private helper method to map a Product entity to its DTO.
      */
-    private ProductResponseDto mapToProductResponseDto(Product product, String categoryName) {
+    private ProductResponseDto mapToProductResponseDto(Product product, String categoryName, Tax tax) {
         ProductResponseDto dto = new ProductResponseDto();
         dto.setId(product.getId());
         dto.setName(product.getName());
@@ -155,6 +211,8 @@ public class ProductService {
         dto.setCategoryId(product.getCategoryId());
         dto.setTaxcatId(product.getTaxcatId());
         dto.setCategoryName(categoryName);
+        dto.setTaxName(tax.getName());
+        dto.setTaxRate(tax.getRate());
         return dto;
     }
 

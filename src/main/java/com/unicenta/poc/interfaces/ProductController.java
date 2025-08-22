@@ -36,6 +36,7 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Page<ProductResponseDto>> getAllProducts(Pageable pageable) {
+        System.out.println(">>> ProductController.getAllProducts(pageable) <<<");
         return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 
@@ -57,7 +58,13 @@ public class ProductController {
         System.out.println(">>> ProductController.getProductByName.name: "+name +" <<<");
         return productService.getProductByName(name);
     }
-
+    
+    @GetMapping("/searchByCode")
+    public List<ProductResponseDto> getProductByCode(@RequestParam(name = "code", required = false) String code) {
+        System.out.println(">>> ProductController.getProductByCode.code: "+code +" <<<");
+        return productService.getProductByCode(code);
+    }
+    
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable String id, @Valid @RequestBody ProductDto dto) {
         System.out.println(">>> ProductController.id: " + id);

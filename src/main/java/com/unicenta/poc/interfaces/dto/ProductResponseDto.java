@@ -1,11 +1,17 @@
 package com.unicenta.poc.interfaces.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO for sending product data to the client. Includes the category name.
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductResponseDto {
 
     private String id;
@@ -19,4 +25,6 @@ public class ProductResponseDto {
     private String categoryName; 
     private String taxcatId;
     private String display;
+    private double taxRate;
+    private String taxName;
 }

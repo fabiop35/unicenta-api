@@ -39,6 +39,7 @@ public class TaxCategoryController {
 
     @GetMapping
     public ResponseEntity<List<TaxCategory>> getAllTaxCategories() {
+        System.out.println(">>>TaxCategoryController.getAllTaxCategories");
         return ResponseEntity.ok(taxCategoryService.getAllTaxCategories());
     }
 

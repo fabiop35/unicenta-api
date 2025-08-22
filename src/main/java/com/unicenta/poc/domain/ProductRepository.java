@@ -7,9 +7,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductRepository extends PagingAndSortingRepository<Product, String> {
-    
-     //@Override // Though optional, it helps confirm you're overriding the correct method
+
+    //@Override // Though optional, it helps confirm you're overriding the correct method
     <S extends Product> S save(S entity);
     public Optional<Product> findById(String id);
     public List<Product> findTop10ByNameContainingIgnoreCase(String name);
+    public List<Product> findTop10ByCodeContainingIgnoreCase(String code);
 }

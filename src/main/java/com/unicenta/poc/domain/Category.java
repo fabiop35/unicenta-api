@@ -23,8 +23,8 @@ public class Category implements Persistable<String> {
     private String id;
     private String name;
     
-    @JsonIgnore
-    UUID value = UUID.randomUUID();
+    /*@JsonIgnore
+    UUID value = UUID.randomUUID();*/
 
     @Transient
     private boolean isNewProduct = true;

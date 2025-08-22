@@ -23,8 +23,8 @@ public class TaxCategory implements Persistable<String> {
     private String id;
     private String name;
 
-    @JsonIgnore
-    private String value = UUID.randomUUID().toString();
+//    @JsonIgnore
+//    private String value = UUID.randomUUID().toString();
 
     @Transient
     private boolean isNewProduct = true;

@@ -8,12 +8,14 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Table(name = "taxes")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Tax implements Persistable<String> {
 
     @Id
@@ -23,7 +25,7 @@ public class Tax implements Persistable<String> {
     @Column("category")
     private String taxcatId;
     private double rate;
-    UUID value = UUID.randomUUID();
+    //UUID value = UUID.randomUUID();
     
     @Transient
     private boolean isNewProduct = true;
