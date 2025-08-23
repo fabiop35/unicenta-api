@@ -34,6 +34,11 @@ public class Category implements Persistable<String> {
         this.name = name;
         this.isNewProduct = true;
     }
+     public Category(String id, String name) {
+        this.id = id;
+        this.name = name;
+        this.isNewProduct = true;
+    }
 
     @Override
     @JsonIgnore

@@ -1,0 +1,84 @@
+package com.unicenta.poc.application.services;
+
+import com.unicenta.poc.domain.Category;
+import com.unicenta.poc.domain.CategoryRepository;
+import com.unicenta.poc.domain.Tax;
+import com.unicenta.poc.domain.TaxRepository;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class LookupService {
+
+    private final CategoryRepository categoryRepository;
+    private final TaxRepository taxRepository;
+
+    /**
+     * Get category name by ID (cached)
+     * @param id
+     * @return 
+     */
+    @Cacheable(value = "categoriesNames", key = "#id", unless = "#result == null")
+    public String getCategoryName(String id) {
+        return categoryRepository.findById(id)
+                .map(Category::getName)
+                .orElse("Unknown");
+    }
+
+    /**
+     * Bulk load all categories as a cached map (if needed).This is safe because it has no parameters → key is class + method.
+     * @return
+     */
+    @Cacheable(value = "allCategories")
+    public Map<String, String> getAllCategoryMap() {
+        System.out.println(">>> Loading from DB: getAllCategoryMap() <<<");
+        return categoryRepository.findAll().stream()
+                .collect(Collectors.toMap(Category::getId, Category::getName));
+    }
+
+    /**
+     * Get tax name by taxcatId
+     * @param taxcatId
+     * @return 
+     */
+    @Cacheable(value = "taxesNames", key = "#taxcatId", unless = "#result == null")
+    public String getTaxName(String taxcatId) {
+        System.out.println(">>> Loading from DB: getTaxName() <<<");
+        return taxRepository.findAllByTaxcatIdIn(List.of(taxcatId)).stream()
+                .findFirst()
+                .map(Tax::getName)
+                .orElse("No Tax");
+    }
+
+    /**
+     * Get tax rate by taxcatId
+     * @param taxcatId
+     * @return 
+     */
+    @Cacheable(value = "taxesRates", key = "#taxcatId", unless = "#result == null")
+    public Double getTaxRate(String taxcatId) {
+        return taxRepository.findAllByTaxcatIdIn(List.of(taxcatId)).stream()
+                .findFirst()
+                .map(Tax::getRate)
+                .orElse(0.0);
+    }
+
+    /**
+     * Bulk load all taxes (ideal for full refresh)
+     * @return 
+     */
+    @Cacheable(value = "allTaxes")
+    public Map<String, Tax> getAllTaxesMap() {
+        System.out.println(">>> Loading from DB: getAllTaxesMap() <<<");
+        return taxRepository.findAll().stream()
+                .collect(Collectors.toMap(Tax::getTaxcatId, tax -> tax));
+    }
+}

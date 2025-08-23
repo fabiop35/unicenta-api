@@ -33,6 +33,11 @@ public class TaxCategory implements Persistable<String> {
         this.id = UUID.randomUUID().toString();
         this.name = name;
     }
+    
+    public TaxCategory(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     @Override
     @JsonIgnore

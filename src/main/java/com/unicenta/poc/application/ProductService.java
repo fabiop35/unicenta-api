@@ -23,7 +23,7 @@ import com.unicenta.poc.domain.TaxRepository;
 import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
 import com.unicenta.poc.interfaces.dto.ProductDto;
 import com.unicenta.poc.interfaces.dto.ProductResponseDto;
-
+import com.unicenta.poc.application.services.LookupService;
 
 @Service
 public class ProductService {
@@ -32,12 +32,15 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final TaxCategoryRepository taxCategoryRepository;
     private final TaxRepository taxRepository;
+    private final LookupService lookupService;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, TaxCategoryRepository taxCategoryRepository, TaxRepository taxRepository) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository,
+            TaxCategoryRepository taxCategoryRepository, TaxRepository taxRepository, LookupService lookupService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.taxCategoryRepository = taxCategoryRepository;
         this.taxRepository = taxRepository;
+        this.lookupService = lookupService;
     }
 
     @Transactional
@@ -69,28 +72,24 @@ public class ProductService {
         if (productsOnPage.isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
-        // Get all unique category IDs from the current page of products
-        Set<String> categoryIds = productsOnPage.stream()
-                .map(Product::getCategoryId)
-                .collect(Collectors.toSet());
 
-        // Fetch all necessary categories in a single query
-        Map<String, String> categoryMap = categoryRepository.findAllById(categoryIds).stream()
-                .collect(Collectors.toMap(Category::getId, Category::getName));
+        // Fetch all necessary categories, taxes in a single query
+        Map<String, String> categoryMap = lookupService.getAllCategoryMap();
+        Map<String, Tax> taxMap = lookupService.getAllTaxesMap();
 
         //get all the tax categories  by product
         Set<String> taxCategoryIds = productsOnPage.stream()
                 .map(Product::getTaxcatId)
                 .collect(Collectors.toSet());
 
-        List<Tax> taxes = taxRepository.findAllByTaxcatIdIn(new ArrayList<>(taxCategoryIds));
         Map<String, String> taxNameMap = new HashMap<>();
         Map<String, Double> taxRateMap = new HashMap<>();
 
-        taxes.forEach(tax -> {
-            taxNameMap.put(tax.getTaxcatId(), tax.getName());
-            taxRateMap.put(tax.getTaxcatId(), tax.getRate());
-        });
+        for (String taxcatId : taxCategoryIds) {
+            Tax tax = taxMap.get(taxcatId);
+            taxNameMap.put(taxcatId, tax != null ? tax.getName() : "No Tax");
+            taxRateMap.put(taxcatId, tax != null ? tax.getRate() : 0.0);
+        }
 
         //System.out.println("Printing values using forEach() with a lambda expression:");
         //taxRateMap.forEach((key, value) -> {System.out.println(key); System.out.println(value);});
@@ -140,7 +139,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductResponseDto> getProductByName(String name) {
-        
+
         List<Product> products = productRepository.findTop10ByNameContainingIgnoreCase(name);
         List<ProductResponseDto> productsDtos = new ArrayList<>();
         products.forEach(
