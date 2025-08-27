@@ -20,4 +20,8 @@ public interface SupplierRepository extends PagingAndSortingRepository<Supplier,
     public void deleteAll();
 
     public List<Supplier> findTop10BySearchkeyContainingIgnoreCase(String searchTerm);
+
+    default Optional<Supplier> findByIdSafe(String id) {
+        return id == null ? Optional.empty() : findById(id);
+    }
 }

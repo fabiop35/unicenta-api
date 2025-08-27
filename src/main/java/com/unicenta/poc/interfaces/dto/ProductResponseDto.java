@@ -27,4 +27,6 @@ public class ProductResponseDto {
     private String display;
     private double taxRate;
     private String taxName;
+    private String idSupplier;
+    private String supplierName;
 }

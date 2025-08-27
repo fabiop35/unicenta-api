@@ -48,7 +48,7 @@ class ProductServiceIntegrationTest {
         categoryRepository.save(cat);
         taxRepository.save(tax);
 
-        productRepository.save(new Product("REF001", "7701", "Test Product", 100, 50, cat.getId(), taxCat.getId(), "TP"));
+        productRepository.save(new Product("REF001", "7701", "Test Product", 100, 50, cat.getId(), taxCat.getId(), "TP", "dee29ece-5b13-4f71-bc9e-845dbccddea9"));
 
         this.productService = new ProductService(productRepository, categoryRepository, taxCategoryRepository, taxRepository, lookupService);
     }

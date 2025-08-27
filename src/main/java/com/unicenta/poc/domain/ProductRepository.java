@@ -2,6 +2,7 @@ package com.unicenta.poc.domain;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +14,7 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, S
     public Optional<Product> findById(String id);
     public List<Product> findTop10ByNameContainingIgnoreCase(String name);
     public List<Product> findTop10ByCodeContainingIgnoreCase(String code);
+    
+    @Query("SELECT CONCAT('REF-', LPAD(COUNT(*) + 1, 10, '0')) AS next_reference FROM products WHERE reference LIKE 'REF-%' ORDER BY reference DESC LIMIT 1")
+    public String getNextProductRerence();
 }

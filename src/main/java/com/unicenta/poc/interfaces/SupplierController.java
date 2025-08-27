@@ -32,6 +32,7 @@ public class SupplierController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Supplier> getSupplierById(@PathVariable String id) {
+        System.out.println(">>> SupplierController.getSupplierById.id: " + id + " <<<");
         return ResponseEntity.ok(supplierService.getSupplierById(id));
     }
 

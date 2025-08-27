@@ -52,7 +52,7 @@ public class ProductService {
         taxCategoryRepository.findById(dto.getTaxcatId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cannot create product. Tax Category with ID " + dto.getTaxcatId() + " not found."));
 
-        Product product = new Product(dto.getReference(), dto.getCode(), dto.getName(), dto.getPricesell(), dto.getPricebuy(), dto.getCategoryId(), dto.getTaxcatId(), dto.getName());
+        Product product = new Product(dto.getReference(), dto.getCode(), dto.getName(), dto.getPricesell(), dto.getPricebuy(), dto.getCategoryId(), dto.getTaxcatId(), dto.getName(), dto.getIdSupplier());
         return productRepository.save(product);
     }
 
@@ -96,20 +96,24 @@ public class ProductService {
         // Map the Product entities to ProductResponseDto
         List<ProductResponseDto> dtos = productsOnPage.stream()
                 .map(product -> ProductResponseDto.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .reference(product.getReference())
-                .code(product.getCode())
-                .codetype(product.getCodetype())
-                .pricesell(product.getPricesell())
-                .pricebuy(product.getPricebuy())
-                .categoryId(product.getCategoryId())
-                .categoryName(categoryMap.getOrDefault(product.getCategoryId(), "Unknown"))
-                .taxcatId(product.getTaxcatId())
-                .taxName(taxNameMap.getOrDefault(product.getTaxcatId(), "No Tax"))
-                .taxRate(taxRateMap.getOrDefault(product.getTaxcatId(), 0.0))
-                .display(product.getDisplay())
-                .build())
+                        .id(product.getId())
+                        .name(product.getName())
+                        .reference(product.getReference())
+                        .code(product.getCode())
+                        .codetype(product.getCodetype())
+                        .pricesell(product.getPricesell())
+                        .pricebuy(product.getPricebuy())
+                        .categoryId(product.getCategoryId())
+                        .categoryName(categoryMap.getOrDefault(product.getCategoryId(), "Unknown"))
+                        .taxcatId(product.getTaxcatId())
+                        .taxName(taxNameMap.getOrDefault(product.getTaxcatId(), "No Tax"))
+                        .taxRate(taxRateMap.getOrDefault(product.getTaxcatId(), 0.0))
+                        .display(product.getDisplay())
+                        .idSupplier(product.getIdSupplier() != null ? product.getIdSupplier() : "No Supplier" )
+                        .supplierName(product.getIdSupplier() != null
+                                ? lookupService.getSupplierName(product.getIdSupplier())
+                                : "No Supplier")
+                        .build())
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtos, pageable, productPage.getTotalElements());
@@ -141,6 +145,17 @@ public class ProductService {
     public List<ProductResponseDto> getProductByName(String name) {
 
         List<Product> products = productRepository.findTop10ByNameContainingIgnoreCase(name);
+
+        Map<String, Double> taxRateMap = new HashMap<>();
+        Map<String, String> taxNameMap = new HashMap<>();
+        Map<String, Tax> taxMap = lookupService.getAllTaxesMap();
+
+        for (Product taxcatId : products) {
+            Tax tax = taxMap.get(taxcatId.getTaxcatId());
+            taxRateMap.put(taxcatId.getTaxcatId(), tax != null ? tax.getRate() : 0.0);
+            taxNameMap.put(taxcatId.getTaxcatId(), tax != null ? tax.getName() : "No Tax");
+        }
+
         List<ProductResponseDto> productsDtos = new ArrayList<>();
         products.forEach(
                 (Product e) -> {
@@ -160,6 +175,8 @@ public class ProductService {
                     dto.setCategoryId(e.getCategoryId());
                     dto.setTaxcatId(e.getTaxcatId());
                     dto.setCategoryName(categoryName);
+                    dto.setTaxRate(taxRateMap.getOrDefault(e.getTaxcatId(), 0.0));
+                    dto.setTaxName(taxNameMap.getOrDefault(e.getTaxcatId(), "No Tax"));
                     productsDtos.add(dto);
                 });
 
@@ -168,8 +185,20 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductResponseDto> getProductByCode(String code) {
+
+        System.out.println(">>>>>> ProductService.getProductByCode(" + code + ") <<<<<<");
         List<Product> products = productRepository.findTop10ByCodeContainingIgnoreCase(code);
         List<ProductResponseDto> productsDtos = new ArrayList<>();
+
+        Map<String, Double> taxRateMap = new HashMap<>();
+        Map<String, String> taxNameMap = new HashMap<>();
+        Map<String, Tax> taxMap = lookupService.getAllTaxesMap();
+        for (Product taxcatId : products) {
+            Tax tax = taxMap.get(taxcatId.getTaxcatId());
+            taxRateMap.put(taxcatId.getTaxcatId(), tax != null ? tax.getRate() : 0.0);
+            taxNameMap.put(taxcatId.getTaxcatId(), tax != null ? tax.getName() : "No Tax");
+        }
+
         products.forEach(
                 (Product e) -> {
                     //System.out.println(e);
@@ -188,6 +217,8 @@ public class ProductService {
                     dto.setCategoryId(e.getCategoryId());
                     dto.setTaxcatId(e.getTaxcatId());
                     dto.setCategoryName(categoryName);
+                    dto.setTaxRate(taxRateMap.getOrDefault(e.getTaxcatId(), 0.0));
+                    dto.setTaxName(taxNameMap.getOrDefault(e.getTaxcatId(), "No Tax"));
                     productsDtos.add(dto);
                 });
 
@@ -236,9 +267,14 @@ public class ProductService {
         product.setPricesell(dto.getPricesell());
         product.setCategoryId(dto.getCategoryId());
         product.setTaxcatId(dto.getTaxcatId());
+        product.setIdSupplier(dto.getIdSupplier());
         product.markNotNew();
 
         return productRepository.save(product);
+    }
+
+    public String getProductRerence() {
+        return productRepository.getNextProductRerence();
     }
 
 }

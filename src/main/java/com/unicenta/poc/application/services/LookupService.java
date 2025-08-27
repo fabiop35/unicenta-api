@@ -2,6 +2,8 @@ package com.unicenta.poc.application.services;
 
 import com.unicenta.poc.domain.Category;
 import com.unicenta.poc.domain.CategoryRepository;
+import com.unicenta.poc.domain.Supplier;
+import com.unicenta.poc.domain.SupplierRepository;
 import com.unicenta.poc.domain.Tax;
 import com.unicenta.poc.domain.TaxRepository;
 
@@ -20,11 +22,13 @@ public class LookupService {
 
     private final CategoryRepository categoryRepository;
     private final TaxRepository taxRepository;
+    private final SupplierRepository supplierRepository;
 
     /**
      * Get category name by ID (cached)
+     *
      * @param id
-     * @return 
+     * @return
      */
     @Cacheable(value = "categoriesNames", key = "#id", unless = "#result == null")
     public String getCategoryName(String id) {
@@ -34,7 +38,9 @@ public class LookupService {
     }
 
     /**
-     * Bulk load all categories as a cached map (if needed).This is safe because it has no parameters → key is class + method.
+     * Bulk load all categories as a cached map (if needed).This is safe because
+     * it has no parameters → key is class + method.
+     *
      * @return
      */
     @Cacheable(value = "allCategories")
@@ -46,8 +52,9 @@ public class LookupService {
 
     /**
      * Get tax name by taxcatId
+     *
      * @param taxcatId
-     * @return 
+     * @return
      */
     @Cacheable(value = "taxesNames", key = "#taxcatId", unless = "#result == null")
     public String getTaxName(String taxcatId) {
@@ -60,8 +67,9 @@ public class LookupService {
 
     /**
      * Get tax rate by taxcatId
+     *
      * @param taxcatId
-     * @return 
+     * @return
      */
     @Cacheable(value = "taxesRates", key = "#taxcatId", unless = "#result == null")
     public Double getTaxRate(String taxcatId) {
@@ -73,12 +81,21 @@ public class LookupService {
 
     /**
      * Bulk load all taxes (ideal for full refresh)
-     * @return 
+     *
+     * @return
      */
     @Cacheable(value = "allTaxes")
     public Map<String, Tax> getAllTaxesMap() {
         System.out.println(">>> Loading from DB: getAllTaxesMap() <<<");
         return taxRepository.findAll().stream()
                 .collect(Collectors.toMap(Tax::getTaxcatId, tax -> tax));
+    }
+
+    @Cacheable(value = "supplierNames", key = "#id", unless = "#result == null")
+    public String getSupplierName(String id) {
+        System.out.println("#>>> LookupService.supplierNames.Loading from DB: getSupplierName() <<<#");
+        return supplierRepository.findById(id)
+                .map(Supplier::getName)
+                .orElse("Unknown");
     }
 }

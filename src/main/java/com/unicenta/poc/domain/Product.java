@@ -64,13 +64,16 @@ public class Product implements Persistable<String> {
     /*@Column("tax_category_id")
     String taxCategoryId = "NULL";*/
     
+    @Column("supplier")
+    private String idSupplier;
+    
     @Transient // This field will NOT be mapped to a database column
     private boolean isNewProduct = true;
     
     
 
     public Product(String reference, String code, String name, double pricesell, double pricebuy,
-            String categoryId, String taxcatId, String display) {
+            String categoryId, String taxcatId, String display, String idSupplier) {
         
         this.id = UUID.randomUUID().toString();
         this.reference = reference;
@@ -81,6 +84,7 @@ public class Product implements Persistable<String> {
         this.categoryId = categoryId;
         this.taxcatId = taxcatId;
         this.display = display;
+        this.idSupplier = idSupplier;
         
         this.isNewProduct = true;
     }

@@ -34,4 +34,7 @@ public class ProductDto {
     
     //@NotBlank(message = "Display name is mandatory")
     private String display;
+    
+    private String idSupplier;
+    private String supplierName;
 }

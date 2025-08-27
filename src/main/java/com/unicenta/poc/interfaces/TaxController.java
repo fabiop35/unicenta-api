@@ -30,6 +30,7 @@ public class TaxController {
 
     @GetMapping
     public ResponseEntity<List<Tax>> getAllTaxes() {
+        System.out.println(">>>>>> TaxController.getAllTaxes() <<<<<<");
         return ResponseEntity.ok(taxService.getAllTaxes());
     }
 

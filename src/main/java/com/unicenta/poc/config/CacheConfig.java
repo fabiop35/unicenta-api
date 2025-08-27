@@ -31,6 +31,7 @@ public class CacheConfig {
                 "allCategories",
                 "taxesNames",
                 "taxesRates",
+                "supplierNames",
                 "allTaxes" // Cache for full tax map
         );
 

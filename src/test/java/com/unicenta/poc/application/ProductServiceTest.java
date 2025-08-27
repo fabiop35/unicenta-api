@@ -40,7 +40,7 @@ class ProductServiceTest {
         dto.setTaxcatId("tax-123");
         dto.setDisplay("Updated Display");
 
-        Product existingProduct = new Product("OLD-REF", "OLD-CODE", "Old Leche", 5000, 3800, "cat-123", "tax-123", "Old Display");
+        Product existingProduct = new Product("OLD-REF", "OLD-CODE", "Old Leche", 5000, 3800, "cat-123", "tax-123", "Old Display", "dee29ece-5b13-4f71-bc9e-845dbccddea9");
         existingProduct.setId("prod-123");
 
         when(productRepository.findById("prod-123")).thenReturn(Optional.of(existingProduct));

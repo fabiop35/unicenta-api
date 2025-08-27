@@ -120,7 +120,7 @@ class ProductControllerIntegrationTest {
     void getAllProducts_ShouldReturnPaginatedListOfProducts() throws Exception {
         // Arrange: Create more products than the page size
         for (int i = 0; i < 15; i++) {
-            Product p = new Product("REF-" + i, "CODE-" + i, "Product " + i, 10, 8, savedCategory.getId(), savedTaxCategory.getId(), "Display " + i);
+            Product p = new Product("REF-" + i, "CODE-" + i, "Product " + i, 10, 8, savedCategory.getId(), savedTaxCategory.getId(), "Display " + i, "dee29ece-5b13-4f71-bc9e-845dbccddea9");
             productRepository.save(p);
         }
 

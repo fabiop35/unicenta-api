@@ -1,6 +1,7 @@
 package com.unicenta.poc.interfaces;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 
@@ -49,26 +50,33 @@ public class ProductController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable String id) {
-        System.out.println(">>> ProductController.getProductById.id: "+id +" <<<");
+        System.out.println(">>> ProductController.getProductById.id: " + id + " <<<");
         return ResponseEntity.ok(productService.getProductById(id));
     }
-    
+
     @GetMapping("/search")
     public List<ProductResponseDto> getProductByName(@RequestParam(name = "name", required = false) String name) {
-        System.out.println(">>> ProductController.getProductByName.name: "+name +" <<<");
+        System.out.println(">>> ProductController.getProductByName.name: " + name + " <<<");
         return productService.getProductByName(name);
     }
-    
+
     @GetMapping("/searchByCode")
     public List<ProductResponseDto> getProductByCode(@RequestParam(name = "code", required = false) String code) {
-        System.out.println(">>> ProductController.getProductByCode.code: "+code +" <<<");
+        System.out.println(">>> ProductController.getProductByCode.code: " + code + " <<<");
         return productService.getProductByCode(code);
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable String id, @Valid @RequestBody ProductDto dto) {
-        System.out.println(">>> ProductController.id: " + id);
-        System.out.println(">>> ProductController.reference: " + dto.getReference());
+        System.out.println(">>> ProductController.updateProduct( id: " + id+" )");
+        System.out.println(">>> ProductController.idSupplier: " + dto.getIdSupplier());
         return ResponseEntity.ok(productService.updateProduct(id, dto));
+    }
+
+    @GetMapping("/getNextProductReference")
+    public ResponseEntity<Map<String, String>> getNextProductReference() {
+        System.out.println(">>> ProductController.getNextProductReference <<<<<<");
+        String reference = productService.getProductRerence();
+        return ResponseEntity.ok(Map.of("reference", reference));
     }
 }

@@ -15,7 +15,7 @@ class ProductJsonTest {
 
     @Test
     void testSerialize() throws Exception {
-        Product product = new Product("REF001", "CODE001", "Test Product", 100.0, 80.0, "cat-01", "tax-cat-01", "Test Product Display");
+        Product product = new Product("REF001", "CODE001", "Test Product", 100.0, 80.0, "cat-01", "tax-cat-01", "Test Product Display", "dee29ece-5b13-4f71-bc9e-845dbccddea9");
         product.setId("prod-01");
 
         assertThat(json.write(product)).extractingJsonPathStringValue("@.id").isEqualTo("prod-01");
@@ -28,7 +28,7 @@ class ProductJsonTest {
     void testDeserialize() throws Exception {
         String content = "{\"id\":\"prod-01\",\"reference\":\"REF001\",\"code\":\"CODE001\",\"name\":\"Test Product\",\"pricesell\":100.0,\"pricebuy\":80.0,\"categoryId\":\"cat-01\",\"taxcatId\":\"tax-cat-01\",\"display\":\"Test Product Display\"}";
 
-        Product expected = new Product("REF001", "CODE001", "Test Product", 100.0, 80.0, "cat-01", "tax-cat-01", "Test Product Display");
+        Product expected = new Product("REF001", "CODE001", "Test Product", 100.0, 80.0, "cat-01", "tax-cat-01", "Test Product Display", "dee29ece-5b13-4f71-bc9e-845dbccddea9");
         expected.setId("prod-01");
 
         Product actual = json.parseObject(content);
