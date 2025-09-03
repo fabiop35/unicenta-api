@@ -1,7 +1,15 @@
 package com.unicenta.poc.application.services;
 
+import com.unicenta.poc.domain.AttributeSetInstance;
+import com.unicenta.poc.domain.AttributeSetInstanceRepository;
 import com.unicenta.poc.domain.Category;
 import com.unicenta.poc.domain.CategoryRepository;
+import com.unicenta.poc.domain.Location;
+import com.unicenta.poc.domain.LocationRepository;
+import com.unicenta.poc.domain.People;
+import com.unicenta.poc.domain.PeopleRepository;
+import com.unicenta.poc.domain.Product;
+import com.unicenta.poc.domain.ProductRepository;
 import com.unicenta.poc.domain.Supplier;
 import com.unicenta.poc.domain.SupplierRepository;
 import com.unicenta.poc.domain.Tax;
@@ -23,6 +31,10 @@ public class LookupService {
     private final CategoryRepository categoryRepository;
     private final TaxRepository taxRepository;
     private final SupplierRepository supplierRepository;
+    private final LocationRepository locationRepository;
+    private final AttributeSetInstanceRepository attributeSetInstanceRepository;
+    private final PeopleRepository peopleRepository;
+    private final ProductRepository productRepository;
 
     /**
      * Get category name by ID (cached)
@@ -91,11 +103,57 @@ public class LookupService {
                 .collect(Collectors.toMap(Tax::getTaxcatId, tax -> tax));
     }
 
-    @Cacheable(value = "supplierNames", key = "#id", unless = "#result == null")
+    @Cacheable(value = "supplierNames")
     public String getSupplierName(String id) {
-        System.out.println("#>>> LookupService.supplierNames.Loading from DB: getSupplierName() <<<#");
+        System.out.println("#>>> LookupService.supplierNames.Loading from DB: getSupplierName().id: " + id + " <<<#");
         return supplierRepository.findById(id)
                 .map(Supplier::getName)
                 .orElse("Unknown");
+    }
+
+    @Cacheable(value = "attributeSetInstanceDescriptions")
+    public String getAttributeSetInstanceDescription(String id) {
+        if (id == null) {
+            return null;
+        }
+        return attributeSetInstanceRepository.findById(id)
+                .map(AttributeSetInstance::getDescription)
+                .orElse(null);
+    }
+
+    @Cacheable(value = "locationNames", key = "#id", unless = "#result == null")
+    public String getLocationName(String id) {
+        return locationRepository.findById(id)
+                .map(Location::getName)
+                .orElse("Unknown Location");
+    }
+
+    @Cacheable(value = "userNames", key = "#id", unless = "#result == null")
+    public String getUserName(String id) {
+        return peopleRepository.findById(id)
+                .map(People::getName)
+                .orElse("Unknown User");
+    }
+
+    @Cacheable(value = "productNames")
+    public String getProductName(String id) {
+        System.out.println("#>>> LookupService.getProductName.Loading from DB id: (" + id + ") <<<#");
+        return productRepository.findById(id)
+                .map(Product::getName)
+                .orElse("Unknown Product");
+    }
+
+    @Cacheable(value = "productReference", key = "#id", unless = "#result == null")
+    public String getProductReference(String id) {
+        return productRepository.findById(id)
+                .map(Product::getReference)
+                .orElse("Unknown Product");
+    }
+
+    @Cacheable(value = "productCode", key = "#id", unless = "#result == null")
+    public String getProductCode(String id) {
+        return productRepository.findById(id)
+                .map(Product::getCode)
+                .orElse("Unknown Product");
     }
 }

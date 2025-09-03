@@ -90,7 +90,7 @@ public class SupplierService {
         // Map product IDs to product names
         return stockDiaries.stream()
                 .peek(sd -> {
-                    productRepository.findById(sd.getProduct())
+                    productRepository.findById(sd.getProductId())
                             .ifPresent(p -> sd.setProductName(p.getName()));
                 })
                 .collect(Collectors.toList());

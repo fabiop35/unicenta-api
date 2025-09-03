@@ -32,6 +32,13 @@ public class CacheConfig {
                 "taxesNames",
                 "taxesRates",
                 "supplierNames",
+                "attributeSetInstanceDescriptions",
+                "productNames",
+                "locationNames",
+                "userNames",
+                "productReference",
+                "productCode",
+                "productNames",
                 "allTaxes" // Cache for full tax map
         );
 
