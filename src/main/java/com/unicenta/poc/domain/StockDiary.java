@@ -43,7 +43,7 @@ public class StockDiary implements Persistable<String> {
     private String productName;
 
     @Transient
-    private boolean isNew;
+    private boolean isNew = true;
 
     @Transient
     private boolean isNewProduct = true;
@@ -68,10 +68,10 @@ public class StockDiary implements Persistable<String> {
 
     @Override
     public boolean isNew() {
-        return this.isNew || id == null;
+        return isNew;
     }
 
     public void markNotNew() {
-        this.isNewProduct = false;
+        this.isNew = false;
     }
 }
