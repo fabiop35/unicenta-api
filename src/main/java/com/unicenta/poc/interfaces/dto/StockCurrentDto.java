@@ -1,8 +1,10 @@
 package com.unicenta.poc.interfaces.dto;
 
 import lombok.Data;
+import lombok.Builder;
 
 @Data
+@Builder
 public class StockCurrentDto {
 
     private String locationId;
@@ -11,7 +13,7 @@ public class StockCurrentDto {
     private Double units;
     private String productName;
     private String locationName;
-    private String attributeSetInstanceDescription;
     private String productReference;
     private String productCode;
+    private String attributeSetInstanceDescription;
 }

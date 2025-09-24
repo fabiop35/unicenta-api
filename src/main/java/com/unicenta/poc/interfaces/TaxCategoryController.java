@@ -22,7 +22,7 @@ import com.unicenta.poc.interfaces.dto.NameDto;
 
 @RestController
 @RequestMapping("/api/v1/tax-categories")
-@CrossOrigin(origins = "http://localhost:4200, https://localhost:4200, http://192.168.10.3:4200, https://192.168.10.3:4200")
+@CrossOrigin(origins = "*")
 public class TaxCategoryController {
 
     private final TaxCategoryService taxCategoryService;

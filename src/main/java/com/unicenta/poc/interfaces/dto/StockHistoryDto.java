@@ -1,15 +1,18 @@
 package com.unicenta.poc.interfaces.dto;
 
 import lombok.Data;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 
+
 @Data
+@Builder
 public class StockHistoryDto {
 
     private String id;
     private LocalDateTime date;
-    private int reason;
+    private Integer reason;
     private String locationId;
     private String productId;
     private String attributeSetInstanceId;

@@ -1,9 +1,8 @@
 package com.unicenta.poc.interfaces.dto;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
+import jakarta.validation.constraints.*;
 
 @Data
 public class StockAdjustmentRequest {
