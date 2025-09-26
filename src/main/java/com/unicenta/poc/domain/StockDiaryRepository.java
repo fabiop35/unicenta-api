@@ -11,14 +11,12 @@ import java.util.Optional;
 
 /**
  * Repository for managing stock movement history.
- * 
- * This is the source of truth for inventory changes.
- * All adjustments, purchases, and sales are recorded here.
- * 
- * Based on uniCenta oPOS model:
- * - Primary key: id (UUID)
- * - Foreign keys to product, location, user, supplier
- * - Drives updates to stockcurrent
+ *
+ * This is the source of truth for inventory changes. All adjustments,
+ * purchases, and sales are recorded here.
+ *
+ * Based on uniCenta oPOS model: - Primary key: id (UUID) - Foreign keys to
+ * product, location, user, supplier - Drives updates to stockcurrent
  */
 @Repository
 public interface StockDiaryRepository extends CrudRepository<StockDiary, String> {
@@ -68,23 +66,22 @@ public interface StockDiaryRepository extends CrudRepository<StockDiary, String>
 
     /**
      * Find by location, product, and attribute set instance.
-     
-    @Query("SELECT * FROM stockdiary " +
-           "WHERE location = :locationId " +
-           "  AND product = :productId " +
-           "  AND COALESCE(attributesetinstance_id, 'NULL') = COALESCE(:attributeSetInstanceId, 'NULL')")
-    List<StockDiary> findByLocationIdAndProductIdAndAttributeSetInstanceId(
-            @Param("locationId") String locationId,
-            @Param("productId") String productId,
-            @Param("attributeSetInstanceId") String attributeSetInstanceId); */
-
+     *
+     * @Query("SELECT * FROM stockdiary " + "WHERE location = :locationId " + "
+     * AND product = :productId " + " AND COALESCE(attributesetinstance_id,
+     * 'NULL') = COALESCE(:attributeSetInstanceId, 'NULL')") List<StockDiary>
+     * findByLocationIdAndProductIdAndAttributeSetInstanceId(
+     * @Param("locationId") String locationId,
+     * @Param("productId") String productId,
+     * @Param("attributeSetInstanceId") String attributeSetInstanceId);
+     */
     /**
      * Find by location, product, and date range.
      */
-    @Query("SELECT * FROM stockdiary " +
-           "WHERE location = :locationId " +
-           "  AND product = :productId " +
-           "  AND datenew BETWEEN :startDate AND :endDate")
+    @Query("SELECT * FROM stockdiary "
+            + "WHERE location = :locationId "
+            + "  AND product = :productId "
+            + "  AND datenew BETWEEN :startDate AND :endDate")
     List<StockDiary> findByLocationIdAndProductIdAndDateBetween(
             @Param("locationId") String locationId,
             @Param("productId") String productId,
@@ -94,11 +91,11 @@ public interface StockDiaryRepository extends CrudRepository<StockDiary, String>
     /**
      * Find by location, product, attribute set instance, and date range.
      */
-    @Query("SELECT * FROM stockdiary " +
-           "WHERE location = :locationId " +
-           "  AND product = :productId " +
-           "  AND COALESCE(attributesetinstance_id, 'NULL') = COALESCE(:attributeSetInstanceId, 'NULL') " +
-           "  AND datenew BETWEEN :startDate AND :endDate")
+    @Query("SELECT * FROM stockdiary "
+            + "WHERE location = :locationId "
+            + "  AND product = :productId "
+            + "  AND COALESCE(attributesetinstance_id, 'NULL') = COALESCE(:attributeSetInstanceId, 'NULL') "
+            + "  AND datenew BETWEEN :startDate AND :endDate")
     List<StockDiary> findByLocationIdAndProductIdAndAttributeSetInstanceIdAndDateBetween(
             @Param("locationId") String locationId,
             @Param("productId") String productId,
@@ -111,14 +108,15 @@ public interface StockDiaryRepository extends CrudRepository<StockDiary, String>
      */
     @Override
     Optional<StockDiary> findById(String id);
-    
+
     /**
-     * NEW: History
-     * Find diary entries for a specific location, product, and optional attribute set instance
+     * Find diary entries for a specific location, product, and optional
+     * attribute set instance
+     *
      * @param locationId
      * @param productId
      * @param attributeSetInstanceId
-     * @return 
+     * @return
      */
     @Query("""
         SELECT * FROM stockdiary 

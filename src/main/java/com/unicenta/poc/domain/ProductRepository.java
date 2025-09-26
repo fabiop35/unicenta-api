@@ -2,6 +2,7 @@ package com.unicenta.poc.domain;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,15 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, S
     
     @Query("SELECT CONCAT('REF-', LPAD(COUNT(*) + 1, 10, '0')) AS next_reference FROM products WHERE reference LIKE 'REF-%' ORDER BY reference DESC LIMIT 1")
     public String getNextProductRerence();
+    
+    
+    @Query("SELECT MAX(catorder)+1 FROM products_cat")
+    public int getNextCatOrder();
+    
+    @Modifying
+    @Query("""
+        INSERT INTO products_cat (product, catorder)
+          VALUES (:product, :catorder) 
+             """)
+    public void saveProductsCat(String product, int catorder);
 }

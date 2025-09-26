@@ -2,6 +2,7 @@ package com.unicenta.poc.web.rest;
 
 import com.unicenta.poc.application.StockService;
 import com.unicenta.poc.domain.Location;
+import com.unicenta.poc.domain.StockCurrent;
 import com.unicenta.poc.domain.StockDiary;
 import com.unicenta.poc.interfaces.dto.InventoryValuationDto;
 import com.unicenta.poc.interfaces.dto.StockAdjustmentRequest;
@@ -87,7 +88,26 @@ public class StockController {
             @RequestParam String locationId,
             @RequestParam String productId,
             @RequestParam(required = false) String attributeSetInstanceId) { // Optional parameter
+        
+        System.out.println(">>> StockController.getStockHistoryForItem.productId: "+productId+" <<<");
+        System.out.println(">>> StockController.getStockHistoryForItem.locationId: "+locationId+" <<<");
+        
         return stockService.getStockHistoryForItem(locationId, productId, attributeSetInstanceId);
     }
     
+    @GetMapping("/current/byCode")
+    public List<StockCurrentDto> getCurrentStockByProductCode(
+            @RequestParam String code,
+            @RequestParam(required = false) String locationId) { // Optional location filter
+        
+        System.out.println(">>> StockController.code: "+code+" <<<");
+        System.out.println(">>> StockController.locationId: "+locationId+" <<<");
+        
+        List<StockCurrentDto> stockCurrentDtoList = stockService.getCurrentStockByProductCode(code, locationId);
+        System.out.println(">>>StockController.getCurrentStockByProductCode().stockCurrentDtoList.size()"+stockCurrentDtoList.size());
+        stockCurrentDtoList.forEach(e -> System.out.println(e.getProductId()));
+        
+        return stockCurrentDtoList;
+    }
+
 }

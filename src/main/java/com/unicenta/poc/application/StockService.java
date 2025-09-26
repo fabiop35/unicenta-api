@@ -169,14 +169,14 @@ public class StockService {
                 .attributeSetInstanceDescription(lookupService.getAttributeSetInstanceDescription(stock.getAttributeSetInstanceId()))
                 .build();
     }
-    
+
     // Get current stock by location
     public List<StockCurrentDto> getCurrentStockByLocation(String locationId) {
         return stockCurrentRepository.findByLocationId(locationId).stream()
                 .map(this::convertToStockCurrentDto)
                 .collect(Collectors.toList());
     }
-    
+
     public InventoryValuationDto getInventoryValuation() {
         List<StockCurrent> stockCurrentList = stockCurrentRepository.findAllProjected();
         List<InventoryItemValuationDto> itemValues = new ArrayList<>();
@@ -239,8 +239,9 @@ public class StockService {
                 .map(this::convertToStockCurrentDto)
                 .collect(Collectors.toList());
     }
+    
     /**
-     * NEW History: Get Stock History for a specific item (location, product,
+     * Get Stock History for a specific item (location, product,
      * attributeSetInstance)
      *
      * @param locationId
@@ -270,5 +271,10 @@ public class StockService {
                 .map(this::convertToStockCurrentDto)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    //Get Current Stock Items by Product Code
+    public List<StockCurrentDto> getCurrentStockByProductCode(String productCode, String locationId) {
+        return stockCurrentRepository.findByProductCode(productCode);
     }
 }
