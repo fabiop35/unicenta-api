@@ -25,13 +25,26 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
 
     /**
      * Find all stock records for a location.
+     * @param locationId
+     * @return 
      */
-    @Query("SELECT location, product, attributesetinstance_id, units "
-            + "FROM stockcurrent WHERE location = :locationId")
+    @Query("""
+    SELECT
+        location,
+        product,
+        attributesetinstance_id,
+        units
+    FROM
+        stockcurrent
+    WHERE
+        :locationId IS NULL OR :locationId = 'ALL' OR location = :locationId
+""")
     List<StockCurrent> findByLocationId(@Param("locationId") String locationId);
 
     /**
      * Find all stock records for a product.
+     * @param productId
+     * @return 
      */
     @Query("SELECT location, product, attributesetinstance_id, units "
             + "FROM stockcurrent WHERE product = :productId")
@@ -39,6 +52,9 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
 
     /**
      * Find by location and product (used for filtering).
+     * @param locationId
+     * @param productId
+     * @return 
      */
     @Query("SELECT location, product, attributesetinstance_id, units "
             + "FROM stockcurrent WHERE location = :locationId AND product = :productId")
@@ -49,6 +65,11 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
     /**
      * Find by composite key: location + product + attributesetinstance_id Uses
      * COALESCE to handle NULL safely in unique constraint.
+     *
+     * @param locationId
+     * @param productId
+     * @param attributeSetInstanceId
+     * @return
      */
     @Query("SELECT location, product, attributesetinstance_id, units "
             + "FROM stockcurrent "
@@ -61,8 +82,13 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
             @Param("attributeSetInstanceId") String attributeSetInstanceId);
 
     /**
-     * Find all records matching location, product, and optional asi_id. Used
-     * for duplicate detection and fallback lookup.
+     * Find all records matching location, product, and optional asi_id.Used for
+     * duplicate detection and fallback lookup.
+     *
+     * @param locationId
+     * @param productId
+     * @param attributeSetInstanceId
+     * @return
      */
     @Query("SELECT location, product, attributesetinstance_id, units "
             + "FROM stockcurrent "
@@ -76,6 +102,10 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
 
     /**
      * Delete by composite key (safe with NULL handling).
+     *
+     * @param locationId
+     * @param productId
+     * @param attributeSetInstanceId
      */
     @Modifying
     @Query("DELETE FROM stockcurrent "
@@ -89,12 +119,18 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
 
     /**
      * Find all projected (safe subset of columns).
+     *
+     * @return
      */
     @Query("SELECT location, product, attributesetinstance_id, units FROM stockcurrent")
     List<StockCurrent> findAllProjected();
 
     /**
      * Custom query for search by product name or reference.
+     *
+     * @param locationId
+     * @param search
+     * @return
      */
     @Query("""
         SELECT sc.location as locationId,
@@ -112,9 +148,11 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
             @Param("search") String search);
 
     /**
-     * UPSERT: Insert or update on duplicate key. Uses COALESCE to ensure NULL
+     * UPSERT: Insert or update on duplicate key.Uses COALESCE to ensure NULL
      * values are handled consistently. Prevents foreign key violations by not
      * inserting invalid IDs.
+     *
+     * @param stock
      */
     @Modifying
     @Query("""

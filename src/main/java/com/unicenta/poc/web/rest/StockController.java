@@ -37,6 +37,7 @@ public class StockController {
     }
     @GetMapping("/current/location/{locationId}")
     public List<StockCurrentDto> getCurrentStockByLocation(@PathVariable String locationId) {
+        System.out.println(">>> StockController.getCurrentStockByLocation("+locationId+")");
         return stockService.getCurrentStockByLocation(locationId);
     }
     @PostMapping("/adjust")
