@@ -39,6 +39,8 @@ dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-cache'
         implementation 'com.github.ben-manes.caffeine:caffeine'
         implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+        // Implementation for iText 7 for PDF Generation
+        implementation 'com.itextpdf:itext7-core:8.0.4'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
