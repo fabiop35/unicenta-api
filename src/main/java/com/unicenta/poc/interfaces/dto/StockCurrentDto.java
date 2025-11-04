@@ -16,4 +16,6 @@ public class StockCurrentDto {
     private String productReference;
     private String productCode;
     private String attributeSetInstanceDescription;
+    private double pricebuy;
+    private String idSupplier;
 }

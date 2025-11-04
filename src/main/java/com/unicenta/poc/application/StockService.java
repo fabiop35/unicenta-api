@@ -6,6 +6,7 @@ import com.unicenta.poc.interfaces.dto.InventoryItemValuationDto;
 import com.unicenta.poc.interfaces.dto.InventoryValuationDto;
 
 import com.unicenta.poc.interfaces.dto.StockCurrentDto;
+import com.unicenta.poc.interfaces.dto.StockEntryRequest;
 import com.unicenta.poc.interfaces.dto.StockHistoryDto;
 
 import org.springframework.data.domain.Page;
@@ -31,6 +32,7 @@ public class StockService {
     private final ProductRepository productRepository;
     private final AttributeSetInstanceRepository attributeSetInstanceRepository;
     private final LookupService lookupService;
+    private final SupplierRepository supplierRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
 
@@ -40,13 +42,16 @@ public class StockService {
             LocationRepository locationRepository,
             ProductRepository productRepository,
             AttributeSetInstanceRepository attributeSetInstanceRepository,
-            LookupService lookupService) {
+            LookupService lookupService,
+            SupplierRepository supplierRepository) {
+
         this.stockCurrentRepository = stockCurrentRepository;
         this.stockDiaryRepository = stockDiaryRepository;
         this.locationRepository = locationRepository;
         this.productRepository = productRepository;
         this.attributeSetInstanceRepository = attributeSetInstanceRepository;
         this.lookupService = lookupService;
+        this.supplierRepository = supplierRepository;
     }
 
     public Page<StockCurrentDto> getCurrentStock(int page, int size, String search, String locationId) {
@@ -62,10 +67,12 @@ public class StockService {
                     String searchTerm = search.toLowerCase();
                     String productName = lookupService.getProductName(stock.getProductId());
                     String productRef = lookupService.getProductReference(stock.getProductId());
+                    double pricebuy = lookupService.getProductPricebuy(stock.getProductId());
                     String productCode = lookupService.getProductCode(stock.getProductId());
                     return (productName != null && productName.toLowerCase().contains(searchTerm))
                             || (productRef != null && productRef.toLowerCase().contains(searchTerm))
-                            || (productCode != null && productCode.toLowerCase().contains(searchTerm));
+                            || (productCode != null && productCode.toLowerCase().contains(searchTerm)
+                            || pricebuy != 0.0);
                 })
                 .collect(Collectors.toList());
 
@@ -167,6 +174,8 @@ public class StockService {
                 .productReference(lookupService.getProductReference(stock.getProductId()))
                 .productCode(lookupService.getProductCode(stock.getProductId()))
                 .attributeSetInstanceDescription(lookupService.getAttributeSetInstanceDescription(stock.getAttributeSetInstanceId()))
+                .pricebuy(lookupService.getProductPricebuy(stock.getProductId()))
+                .idSupplier(lookupService.getIdSupplier(stock.getProductId())) 
                 .build();
     }
 
@@ -233,13 +242,14 @@ public class StockService {
     public List<Location> getLocations() {
         return locationRepository.findAll();
     }
+
     // Get current stock by product
     public List<StockCurrentDto> getCurrentStockByProduct(String productId) {
         return stockCurrentRepository.findByProductId(productId).stream()
                 .map(this::convertToStockCurrentDto)
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Get Stock History for a specific item (location, product,
      * attributeSetInstance)
@@ -276,5 +286,66 @@ public class StockService {
     //Get Current Stock Items by Product Code
     public List<StockCurrentDto> getCurrentStockByProductCode(String productCode, String locationId) {
         return stockCurrentRepository.findByProductCode(productCode);
+    }
+
+    @Transactional
+    public StockDiary createStockEntry(StockEntryRequest request, String userId) {
+        String asi = (request.attributeSetInstanceId() != null && !request.attributeSetInstanceId().isBlank())
+                ? request.attributeSetInstanceId() : null;
+
+        // Validate FKs
+        if (!productRepository.existsById(request.productId())) {
+            throw new IllegalArgumentException("Producto no válido: " + request.productId());
+        }
+        if (!locationRepository.existsById(request.locationId())) {
+            throw new IllegalArgumentException("Ubicación no válida: " + request.locationId());
+        }
+        if (request.supplier() != null && !supplierRepository.existsById(request.supplier())) {
+            throw new IllegalArgumentException("Proveedor no válido: " + request.supplier());
+        }
+
+        // Create diary entry
+        StockDiary diary = new StockDiary(
+                request.date(),
+                request.reason(),
+                request.locationId(),
+                request.productId(),
+                asi,
+                request.units(),
+                request.price(),
+                userId,
+                request.supplier(),
+                request.supplierDoc(),
+                "Manual entry via UI"
+        );
+        diary.setPrice(diary.getPrice() != null ? diary.getPrice() : 0.0);
+        StockDiary savedDiary = stockDiaryRepository.save(diary);
+
+        // 🔥 SAFE UPSERT WITHOUT @Id or DB SCHEMA CHANGE
+        Optional<StockCurrent> existingOpt = stockCurrentRepository.findByCompositeKey(
+                request.locationId(), request.productId(), asi);
+
+        double currentUnits = existingOpt.map(StockCurrent::getUnits).orElse(0.0);
+        double newUnits = currentUnits + request.units();
+
+        // Delete existing row (handles NULL correctly via COALESCE)
+        stockCurrentRepository.deleteByCompositeKey(
+                request.locationId(),
+                request.productId(),
+                asi
+        );
+
+        // Insert new row using raw SQL (no @Id needed)
+        stockCurrentRepository.insertRaw(
+                request.locationId(),
+                request.productId(),
+                asi, // can be null
+                newUnits
+        );
+        
+        //Update the product pricebuy, supplier
+        productRepository.updatePricebuyAndSupplier(request.productId(), request.price(), request.supplier());
+        
+        return savedDiary;
     }
 }

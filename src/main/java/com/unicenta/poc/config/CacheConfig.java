@@ -39,6 +39,8 @@ public class CacheConfig {
                 "productReference",
                 "productCode",
                 "productNames",
+                "pricebuy",
+                "supplierId",
                 "allTaxes" // Cache for full tax map
         );
 

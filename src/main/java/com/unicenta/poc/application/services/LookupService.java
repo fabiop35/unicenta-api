@@ -110,6 +110,12 @@ public class LookupService {
                 .map(Supplier::getName)
                 .orElse("Unknown");
     }
+    
+    @Cacheable(value = "supplierId")
+    public String getIdSupplier(String id) {
+        System.out.println("#>>> LookupService.idSupplier.Loading from DB: getIdSupplier.id: " + id + " <<<#");
+        return productRepository.findSupplier(id);
+    }
 
     @Cacheable(value = "attributeSetInstanceDescriptions")
     public String getAttributeSetInstanceDescription(String id) {
@@ -155,5 +161,12 @@ public class LookupService {
         return productRepository.findById(id)
                 .map(Product::getCode)
                 .orElse("Unknown Product");
+    }
+    
+    @Cacheable(value = "pricebuy", key = "#id", unless = "#result == null")
+    public double getProductPricebuy(String id) {
+        return productRepository.findById(id)
+                .map(Product::getPricebuy)
+                .orElse(0.0);
     }
 }

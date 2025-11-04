@@ -16,7 +16,7 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, S
     public List<Product> findTop10ByNameContainingIgnoreCase(String name);
     public List<Product> findTop10ByCodeContainingIgnoreCase(String code);
     
-    @Query("SELECT CONCAT('REF-', LPAD(COUNT(*) + 1, 10, '0')) AS next_reference FROM products WHERE reference LIKE 'REF-%' ORDER BY reference DESC LIMIT 1")
+    @Query("SELECT CONCAT('REF-', LPAD(COUNT(*) + 1, 15, '0')) AS next_reference FROM products WHERE reference LIKE 'REF-%' ORDER BY reference DESC LIMIT 1")
     public String getNextProductRerence();
     
     
@@ -29,4 +29,13 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, S
           VALUES (:product, :catorder) 
              """)
     public void saveProductsCat(String product, int catorder);
+    
+    @Query("SELECT supplier FROM products WHERE id = :id")
+    public String findSupplier(String id);
+    
+    boolean existsById(String id);
+    
+    @Modifying
+    @Query("UPDATE products SET pricebuy = :pricebuy, supplier = :supplier  WHERE id = :id")
+    public void updatePricebuyAndSupplier(String id, Double pricebuy, String supplier);
 }

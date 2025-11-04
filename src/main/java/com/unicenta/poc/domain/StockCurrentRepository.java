@@ -25,8 +25,9 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
 
     /**
      * Find all stock records for a location.
+     *
      * @param locationId
-     * @return 
+     * @return
      */
     @Query("""
     SELECT
@@ -43,8 +44,9 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
 
     /**
      * Find all stock records for a product.
+     *
      * @param productId
-     * @return 
+     * @return
      */
     @Query("SELECT location, product, attributesetinstance_id, units "
             + "FROM stockcurrent WHERE product = :productId")
@@ -52,9 +54,10 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
 
     /**
      * Find by location and product (used for filtering).
+     *
      * @param locationId
      * @param productId
-     * @return 
+     * @return
      */
     @Query("SELECT location, product, attributesetinstance_id, units "
             + "FROM stockcurrent WHERE location = :locationId AND product = :productId")
@@ -189,4 +192,16 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
             p.code = :productCode
         """)
     List<StockCurrentDto> findByProductCode(@Param("productCode") String productCode);
+
+    @Modifying
+    @Query("""
+    INSERT INTO stockcurrent (location, product, attributesetinstance_id, units)
+    VALUES (:locationId, :productId, :attributeSetInstanceId, :units)
+    """)
+    void insertRaw(
+            @Param("locationId") String locationId,
+            @Param("productId") String productId,
+            @Param("attributeSetInstanceId") String attributeSetInstanceId,
+            @Param("units") Double units
+    );
 }

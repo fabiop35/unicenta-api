@@ -49,6 +49,10 @@ public interface StockDiaryRepository extends CrudRepository<StockDiary, String>
 
     /**
      * Find by product and date range.
+     * @param productId
+     * @param startDate
+     * @param endDate
+     * @return 
      */
     @Query("SELECT * FROM stockdiary WHERE product = :productId AND datenew BETWEEN :startDate AND :endDate")
     List<StockDiary> findByProductIdAndDateBetween(
