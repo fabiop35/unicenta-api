@@ -20,6 +20,8 @@ public record StockEntryRequest(
         String supplierDoc,
         @NotNull
         @DecimalMin("0.01")
-        Double units) {
+        Double units,
+        @DecimalMin("0.0")
+        Double pricesell){
 
 }

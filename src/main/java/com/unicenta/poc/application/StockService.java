@@ -21,6 +21,9 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 
 @Service
 @Transactional(readOnly = true)
@@ -35,7 +38,10 @@ public class StockService {
     private final SupplierRepository supplierRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
-
+    
+    @Autowired
+    private CacheManager cacheManager;
+    
     public StockService(
             StockCurrentRepository stockCurrentRepository,
             StockDiaryRepository stockDiaryRepository,
@@ -68,11 +74,13 @@ public class StockService {
                     String productName = lookupService.getProductName(stock.getProductId());
                     String productRef = lookupService.getProductReference(stock.getProductId());
                     double pricebuy = lookupService.getProductPricebuy(stock.getProductId());
+                    double pricesell = lookupService.getProductPricesell(stock.getProductId());
                     String productCode = lookupService.getProductCode(stock.getProductId());
                     return (productName != null && productName.toLowerCase().contains(searchTerm))
                             || (productRef != null && productRef.toLowerCase().contains(searchTerm))
                             || (productCode != null && productCode.toLowerCase().contains(searchTerm)
-                            || pricebuy != 0.0);
+                            || pricebuy != 0.0
+                            || pricesell != 0.0);
                 })
                 .collect(Collectors.toList());
 
@@ -175,7 +183,8 @@ public class StockService {
                 .productCode(lookupService.getProductCode(stock.getProductId()))
                 .attributeSetInstanceDescription(lookupService.getAttributeSetInstanceDescription(stock.getAttributeSetInstanceId()))
                 .pricebuy(lookupService.getProductPricebuy(stock.getProductId()))
-                .idSupplier(lookupService.getIdSupplier(stock.getProductId())) 
+                .idSupplier(lookupService.getIdSupplier(stock.getProductId()))
+                .pricesell(lookupService.getProductPricesell(stock.getProductId()))
                 .build();
     }
 
@@ -288,6 +297,48 @@ public class StockService {
         return stockCurrentRepository.findByProductCode(productCode);
     }
 
+    /**
+     * Creates a new stock diary entry based on the provided request and updates
+     * the current stock levels accordingly.
+     * <p>
+     * This method performs the following actions within a single transaction:
+     * <ul>
+     * <li>Validates the existence of referenced entities: product, location,
+     * and (if provided) supplier.</li>
+     * <li>Creates and persists a {@link StockDiary} entry with the given data,
+     * setting a default price of 0.0 if none is provided.</li>
+     * <li>Atomically updates the current stock quantity in the
+     * {@code stock_current} table by:
+     * <ul>
+     * <li>Looking up the existing stock level using the composite key (location
+     * ID, product ID, and optional attribute set instance ID).</li>
+     * <li>Deleting the existing row (handling {@code NULL} values
+     * correctly).</li>
+     * <li>Inserting a new row with the updated stock quantity.</li>
+     * </ul>
+     * </li>
+     * <li>Updates the product's purchase price and supplier in the product
+     * table.</li>
+     * </ul>
+     * </p>
+     * <p>
+     * The operation uses a safe upsert pattern without requiring an {@code @Id}
+     * on {@link StockCurrent} or changes to the database schema, relying
+     * instead on direct SQL operations for atomicity and correctness.
+     * </p>
+     *
+     * @param request the {@link StockEntryRequest} containing all necessary
+     * data for the stock entry, including product ID, location ID, quantity,
+     * optional price, supplier, and attribute set instance ID.
+     * @param userId the identifier of the user performing the operation;
+     * recorded in the diary entry for audit purposes.
+     * @return the persisted {@link StockDiary} entity representing the newly
+     * created stock entry.
+     * @throws IllegalArgumentException if any referenced entity (product,
+     * location, or supplier) does not exist.
+     * @throws DataAccessException if a database error occurs during the
+     * transaction.
+     */
     @Transactional
     public StockDiary createStockEntry(StockEntryRequest request, String userId) {
         String asi = (request.attributeSetInstanceId() != null && !request.attributeSetInstanceId().isBlank())
@@ -342,9 +393,14 @@ public class StockService {
                 asi, // can be null
                 newUnits
         );
+
+        //Update the product pricebuy, pricesell, supplier
+        productRepository.updatePricebuyAndSupplier(request.productId(), request.price(), request.pricesell(), request.supplier());
         
-        //Update the product pricebuy, supplier
-        productRepository.updatePricebuyAndSupplier(request.productId(), request.price(), request.supplier());
+        /*Cache pricebuyCache = cacheManager.getCache("pricebuy");
+        if (pricebuyCache != null) {
+            pricebuyCache.clear();
+        }*/
         
         return savedDiary;
     }

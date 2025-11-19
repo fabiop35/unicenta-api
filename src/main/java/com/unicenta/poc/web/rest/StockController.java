@@ -124,14 +124,16 @@ public class StockController {
         // TODO: Get real user from security context
         String userId = "Administrator"; // Replace with SecurityContextHolder
         System.out.println(">>> StockController.createStockEntry <<<");
-        System.out.println(">>> StockController.createStockEntry. "+request.productId() +"<<<");
-        System.out.println(">>> StockController.createStockEntry.price: "+request.price() +"<<<");
-        System.out.println(">>> StockController.createStockEntry.date: "+request.date() +"<<<");
-        System.out.println(">>> StockController.createStockEntry.reason:  "+request.reason() +"<<<");
-        System.out.println(">>> StockController.createStockEntry.locationId:  "+request.locationId() +"<<<");
-        System.out.println(">>> StockController.createStockEntry.supplier:  "+request.supplier() +"<<<");
-        System.out.println(">>> StockController.createStockEntry.supplierDoc:  "+request.supplierDoc() +"<<<");
-        System.out.println(">>> StockController.createStockEntry.units:  "+request.units() +"<<<");
+        System.out.println(">>> StockController.createStockEntry.ID:  "+request.productId() +" <<<");
+        System.out.println(">>> StockController.createStockEntry.price: "+request.price() +" <<<");
+        System.out.println(">>> StockController.createStockEntry.date: "+request.date() +" <<<");
+        System.out.println(">>> StockController.createStockEntry.reason:  "+request.reason() +" <<<");
+        System.out.println(">>> StockController.createStockEntry.locationId:  "+request.locationId() +" <<<");
+        System.out.println(">>> StockController.createStockEntry.supplier:  "+request.supplier() +" <<<");
+        System.out.println(">>> StockController.createStockEntry.supplierDoc:  "+request.supplierDoc() +" <<<");
+        System.out.println(">>> StockController.createStockEntry.units:  "+request.units() +" <<<");
+        System.out.println(">>> StockController.createStockEntry.pricesell:  "+request.pricesell() +" <<<");
+        System.out.println(">>> StockController.createStockEntry.attributeSetInstanceId:  "+request.attributeSetInstanceId() +" <<<");
         StockDiary result = stockService.createStockEntry(request, userId);
         return ResponseEntity.ok(result);
     }

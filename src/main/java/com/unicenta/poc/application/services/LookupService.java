@@ -163,10 +163,17 @@ public class LookupService {
                 .orElse("Unknown Product");
     }
     
-    @Cacheable(value = "pricebuy", key = "#id", unless = "#result == null")
+    //@Cacheable(value = "pricebuy", key = "#id", unless = "#result == null")
     public double getProductPricebuy(String id) {
         return productRepository.findById(id)
                 .map(Product::getPricebuy)
+                .orElse(0.0);
+    }
+    
+    //@Cacheable(value = "pricesell", key = "#id", unless = "#result == null")
+    public double getProductPricesell(String id) {
+        return productRepository.findById(id)
+                .map(Product::getPricesell)
                 .orElse(0.0);
     }
 }

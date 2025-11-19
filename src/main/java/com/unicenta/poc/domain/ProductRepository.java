@@ -36,6 +36,6 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, S
     boolean existsById(String id);
     
     @Modifying
-    @Query("UPDATE products SET pricebuy = :pricebuy, supplier = :supplier  WHERE id = :id")
-    public void updatePricebuyAndSupplier(String id, Double pricebuy, String supplier);
+    @Query("UPDATE products SET pricebuy = :pricebuy, pricesell = :pricesell, supplier = :supplier  WHERE id = :id")
+    public void updatePricebuyAndSupplier(String id, Double pricebuy, Double pricesell, String supplier);
 }
