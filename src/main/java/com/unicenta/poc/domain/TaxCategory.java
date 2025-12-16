@@ -13,7 +13,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Table(name = "taxcategories")
+@Table(name = "TAXCATEGORIES")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

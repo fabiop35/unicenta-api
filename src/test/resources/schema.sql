@@ -6,10 +6,12 @@
 // Spring Data JDBC requires this for the `create-drop` equivalent.
 // =================================================================
 
+SET REFERENTIAL_INTEGRITY FALSE;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS taxes;
 DROP TABLE IF EXISTS taxcategories;
 DROP TABLE IF EXISTS categories;
+SET REFERENTIAL_INTEGRITY TRUE;
 
 CREATE TABLE categories (
     id VARCHAR(255) PRIMARY KEY,

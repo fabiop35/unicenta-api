@@ -7,10 +7,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 
 import com.unicenta.poc.domain.Category;
 import com.unicenta.poc.domain.CategoryRepository;
@@ -21,6 +25,12 @@ class CategoryServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private CacheManager cacheManager;
+
+    @Mock
+    private Cache allCategoriesCache;  // needed because cacheManager.getCache(...) is called
 
     @InjectMocks
     private CategoryService categoryService;
@@ -48,6 +58,9 @@ class CategoryServiceTest {
 
     @Test
     void updateCategory_WhenExists_ShouldUpdateAndReturnCategory() {
+        // ✅ Stub cache ONLY here
+        when(cacheManager.getCache("allCategories")).thenReturn(allCategoriesCache);
+        
         Category existingCategory = new Category("Old Name");
         existingCategory.setId("existing-id");
 
@@ -58,6 +71,7 @@ class CategoryServiceTest {
 
         assertNotNull(updatedCategory);
         assertEquals("New Name", updatedCategory.getName());
-        verify(categoryRepository, times(1)).save(existingCategory);
+        verify(categoryRepository).save(existingCategory);
+        verify(allCategoriesCache).invalidate();
     }
 }

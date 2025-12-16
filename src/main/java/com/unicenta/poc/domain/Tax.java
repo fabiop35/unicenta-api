@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table(name = "taxes")
+@Table(name = "TAXES")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,7 +22,7 @@ public class Tax implements Persistable<String> {
     private String id;
     private String name;
     
-    @Column("category")
+    @Column("CATEGORY")
     private String taxcatId;
     private double rate;
     //UUID value = UUID.randomUUID();

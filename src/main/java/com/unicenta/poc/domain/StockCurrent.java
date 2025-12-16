@@ -8,16 +8,16 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Data
 @NoArgsConstructor
-@Table("stockcurrent")
+@Table("STOCKCURRENT")
 public class StockCurrent {
 
-    @Column("location")
+    @Column("LOCATION")
     private String locationId;
 
-    @Column("product")
+    @Column("PRODUCT")
     private String productId;
 
-    @Column("attributesetinstance_id")
+    @Column("ATTRIBUTESETINSTANCE_ID")
     private String attributeSetInstanceId;
 
     private Double units;

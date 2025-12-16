@@ -8,13 +8,13 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Data
 @NoArgsConstructor
-@Table("attributesetinstance")
+@Table("ATTRIBUTESETINSTANCE")
 public class AttributeSetInstance {
 
     @Id
     private String id;
 
-    @Column("attributeset_id")
+    @Column("ATTRIBUTESET_ID")
     private String attributeSetId;
 
     private String description;

@@ -13,7 +13,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table(name = "products")
+@Table(name = "PRODUCTS")
 @Data
 @NoArgsConstructor
 public class Product implements Persistable<String> {
@@ -26,10 +26,10 @@ public class Product implements Persistable<String> {
     private double pricesell;
     private double pricebuy;
 
-    @Column("category")
+    @Column("CATEGORY")
     private String categoryId;
 
-    @Column("taxcat")
+    @Column("TAXCAT")
     private String taxcatId;
 
     private boolean iscom = false;
@@ -64,7 +64,7 @@ public class Product implements Persistable<String> {
     /*@Column("tax_category_id")
     String taxCategoryId = "NULL";*/
     
-    @Column("supplier")
+    @Column("SUPPLIER")
     private String idSupplier;
     
     @Transient // This field will NOT be mapped to a database column

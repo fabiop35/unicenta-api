@@ -26,10 +26,11 @@ class ProductJsonTest {
 
     @Test
     void testDeserialize() throws Exception {
-        String content = "{\"id\":\"prod-01\",\"reference\":\"REF001\",\"code\":\"CODE001\",\"name\":\"Test Product\",\"pricesell\":100.0,\"pricebuy\":80.0,\"categoryId\":\"cat-01\",\"taxcatId\":\"tax-cat-01\",\"display\":\"Test Product Display\"}";
+        String content = "{\"id\":\"prod-01\",\"reference\":\"REF001\",\"code\":\"CODE001\",\"name\":\"Test Product\",\"pricesell\":100.0,\"pricebuy\":80.0,\"categoryId\":\"cat-01\",\"taxcatId\":\"tax-cat-01\",\"display\":\"Test Product Display\",\"idSupplier\":\"dee29ece-5b13-4f71-bc9e-845dbccddea9\"}";
 
         Product expected = new Product("REF001", "CODE001", "Test Product", 100.0, 80.0, "cat-01", "tax-cat-01", "Test Product Display", "dee29ece-5b13-4f71-bc9e-845dbccddea9");
         expected.setId("prod-01");
+        System.out.println("JSON.content: " + content);
 
         Product actual = json.parseObject(content);
         assertThat(actual)

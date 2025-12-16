@@ -14,27 +14,27 @@ import org.springframework.data.relational.core.mapping.Column;
 
 @Data
 @NoArgsConstructor
-@Table("stockdiary")
+@Table("STOCKDIARY")
 public class StockDiary implements Persistable<String> {
 
     @Id
     private String id;
-    @Column("datenew")
+    @Column("DATENEW")
     private LocalDateTime date;
-    @Column("reason")
+    @Column("REASON")
     private int reason; // 0=Purchase, 1=Sale, 2=Adjustment, 3=Movement
-    @Column("location")
+    @Column("LOCATION")
     private String locationId;
-    @Column("product")
+    @Column("PRODUCT")
     private String productId; // Foreign key to Product
-    @Column("attributesetinstance_id")
+    @Column("ATTRIBUTESETINSTANCE_ID")
     private String attributeSetInstanceId;
     private Double units;
     private Double price; // Cost price at time of movement
-    @Column("appuser")
+    @Column("APPUSER")
     private String userId;
     private String supplier; // Foreign key to Supplier.// Supplier ID for purchase movements
-    @Column("supplierdoc")
+    @Column("SUPPLIERDOC")
     private String supplierDoc; // Supplier document reference
     @Transient
     private String notes;

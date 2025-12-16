@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Data
 @NoArgsConstructor
-@Table("locations")
+@Table("LOCATIONS")
 public class Location {
 
     @Id

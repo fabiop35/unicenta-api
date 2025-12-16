@@ -10,17 +10,21 @@ import com.unicenta.poc.domain.TaxCategory;
 import com.unicenta.poc.domain.TaxCategoryRepository;
 import com.unicenta.poc.domain.TaxRepository;
 import com.unicenta.poc.interfaces.dto.ProductResponseDto;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
-@DataJpaTest
-@TestPropertySource(locations = "classpath:application-test.properties")
+//@DataJpaTest
+@SpringBootTest
+@TestPropertySource(locations = "classpath:application.properties")
 class ProductServiceIntegrationTest {
 
     @Autowired
@@ -35,7 +39,8 @@ class ProductServiceIntegrationTest {
     
     @Autowired
     private LookupService lookupService;
-
+    
+    @Autowired
     private ProductService productService;
 
     @BeforeEach
@@ -44,8 +49,10 @@ class ProductServiceIntegrationTest {
         Category cat = new Category("CAT1", "Test Cat");
         TaxCategory taxCat = new TaxCategory("TAXCAT1", "Test TaxCat");
         Tax tax = new Tax("Test Tax", taxCat.getId(), 0.1);
-
+        
+        // ✅ Save referenced entities FIRST
         categoryRepository.save(cat);
+        taxCategoryRepository.save(taxCat);
         taxRepository.save(tax);
 
         productRepository.save(new Product("REF001", "7701", "Test Product", 100, 50, cat.getId(), taxCat.getId(), "TP", "dee29ece-5b13-4f71-bc9e-845dbccddea9"));
