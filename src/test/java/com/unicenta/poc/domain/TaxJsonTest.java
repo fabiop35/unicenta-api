@@ -20,13 +20,13 @@ class TaxJsonTest {
 
         assertThat(json.write(tax)).extractingJsonPathStringValue("@.id").isEqualTo("tax-01");
         assertThat(json.write(tax)).extractingJsonPathStringValue("@.name").isEqualTo("IVA General");
-        assertThat(json.write(tax)).extractingJsonPathStringValue("@.categoryId").isEqualTo("taxcat-123");
+        assertThat(json.write(tax)).extractingJsonPathStringValue("@.taxcatId").isEqualTo("taxcat-123");
         assertThat(json.write(tax)).extractingJsonPathNumberValue("@.rate").isEqualTo(0.19);
     }
 
     @Test
     void testDeserialize() throws Exception {
-        String content = "{\"id\":\"tax-01\",\"name\":\"IVA General\",\"categoryId\":\"taxcat-123\",\"rate\":0.19}";
+        String content = "{\"id\":\"tax-01\",\"name\":\"IVA General\",\"taxcatId\":\"taxcat-123\",\"rate\":0.19}";
         Tax expected = new Tax("IVA General", "taxcat-123", 0.19);
         expected.setId("tax-01");
 

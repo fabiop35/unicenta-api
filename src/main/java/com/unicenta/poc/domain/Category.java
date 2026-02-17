@@ -13,7 +13,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table(name = "CATEGORIES")
+@Table("categories")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

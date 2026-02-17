@@ -1,6 +1,7 @@
 package com.unicenta.poc.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unicenta.poc.config.TestCacheConfig;
 
 import com.unicenta.poc.domain.Category;
 import com.unicenta.poc.domain.CategoryRepository;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.hasSize;
+import org.springframework.context.annotation.Import;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 
@@ -42,6 +44,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @ExtendWith({RestDocumentationExtension.class})
+@Import(TestCacheConfig.class)        
 class CategoryControllerIntegrationTest {
 
     @Autowired
@@ -56,6 +59,8 @@ class CategoryControllerIntegrationTest {
     // This setup is required for Spring REST Docs
     @BeforeEach
     void setUp(WebApplicationContext webApplicationContext, RestDocumentationContextProvider restDocumentation) {
+        
+        
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                 .apply(documentationConfiguration(restDocumentation))
                 // >>> REMOVE THESE TWO LINES FROM HERE <<<
@@ -74,14 +79,16 @@ class CategoryControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name", is("Bebidas")))
+                .andExpect(jsonPath("$.name", is("Bebidas"))
+                )
                 .andDo(document("categories/create",
                         requestFields(
                                 fieldWithPath("name").description("The name of the category.")
                         ),
                         responseFields(
                                 fieldWithPath("id").description("The unique identifier of the category."),
-                                fieldWithPath("name").description("The name of the category.")
+                                fieldWithPath("name").description("The name of the category."),
+                                fieldWithPath("newProduct").description("If a new product is created").optional()
                         )
                 ));
     }

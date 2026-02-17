@@ -6,31 +6,70 @@
 // Spring Data JDBC requires this for the `create-drop` equivalent.
 // =================================================================
 
+-- src/test/resources/schema.sql
 SET REFERENTIAL_INTEGRITY FALSE;
+
+DROP TABLE IF EXISTS stockdiary;
+DROP TABLE IF EXISTS stockcurrent;
+DROP TABLE IF EXISTS ticketlines;
+DROP TABLE IF EXISTS tickets;
+DROP TABLE IF EXISTS products_cat;
 DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS taxes;
-DROP TABLE IF EXISTS taxcategories;
 DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS taxcategories;
+DROP TABLE IF EXISTS taxes;
+DROP TABLE IF EXISTS suppliers;
+
 SET REFERENTIAL_INTEGRITY TRUE;
 
+-- CATEGORIES
 CREATE TABLE categories (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE
 );
 
+-- TAX CATEGORIES
 CREATE TABLE taxcategories (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE
 );
 
+-- TAXES
 CREATE TABLE taxes (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     category VARCHAR(255) NOT NULL,
     rate DOUBLE PRECISION NOT NULL,
-    FOREIGN KEY (category) REFERENCES taxcategories(id)
+    FOREIGN KEY (category) REFERENCES taxcategories(id) ON DELETE CASCADE
 );
 
+-- SUPPLIERS
+CREATE TABLE suppliers (
+    id VARCHAR(255) PRIMARY KEY,
+    searchkey VARCHAR(255) NOT NULL UNIQUE,
+    taxid VARCHAR(255),
+    name VARCHAR(255) NOT NULL,
+    maxdebt DOUBLE PRECISION NOT NULL DEFAULT 0,
+    address VARCHAR(255),
+    address2 VARCHAR(255),
+    postal VARCHAR(255),
+    city VARCHAR(255),
+    region VARCHAR(255),
+    country VARCHAR(255),
+    firstname VARCHAR(255),
+    lastname VARCHAR(255),
+    email VARCHAR(255),
+    phone VARCHAR(255),
+    phone2 VARCHAR(255),
+    fax VARCHAR(255),
+    notes VARCHAR(255),
+    visible BOOLEAN NOT NULL DEFAULT TRUE,
+    curdate TIMESTAMP,
+    curdebt DOUBLE PRECISION DEFAULT 0,
+    vatid VARCHAR(255)
+);
+
+-- PRODUCTS
 CREATE TABLE products (
     id VARCHAR(255) PRIMARY KEY,
     reference VARCHAR(255) NOT NULL UNIQUE,
@@ -41,17 +80,17 @@ CREATE TABLE products (
     pricebuy DOUBLE PRECISION NOT NULL,
     category VARCHAR(255) NOT NULL,
     taxcat VARCHAR(255) NOT NULL,
-    attributeset_id varchar(255),
-    attributes BLOB, 
+    attributeset_id VARCHAR(255),
+    attributes BLOB,
     iscom BOOLEAN DEFAULT FALSE,
     isscale BOOLEAN DEFAULT FALSE,
     isconstant BOOLEAN NOT NULL DEFAULT FALSE,
     printkb BOOLEAN NOT NULL DEFAULT FALSE,
     display VARCHAR(255),
     isvprice BOOLEAN NOT NULL DEFAULT FALSE,
-    isverpatrib DOUBLE,
+    isverpatrib DOUBLE PRECISION,
     texttip VARCHAR(255),
-    warranty DOUBLE,
+    warranty DOUBLE PRECISION,
     stockcost DOUBLE PRECISION DEFAULT 0,
     stockvolume DOUBLE PRECISION DEFAULT 0,
     image BLOB,
@@ -62,42 +101,23 @@ CREATE TABLE products (
     supplier VARCHAR(255),
     uom INTEGER NOT NULL DEFAULT 0,
     memodate TIMESTAMP(6),
-    "value" BINARY(16) NOT NULL DEFAULT RANDOM_UUID(), -- **FIXED FOR H2**
+    "value" BINARY(16) DEFAULT RANDOM_UUID(),
     price_buy DECIMAL(38,2),
     currency_buy VARCHAR(3),
     price_sell DECIMAL(38,2),
     currency_sell VARCHAR(3),
-    category_id BINARY(16) NOT NULL DEFAULT RANDOM_UUID(), -- **FIXED FOR H2**
+    category_id BINARY(16) DEFAULT RANDOM_UUID(),
     currency VARCHAR(255),
-    tax_category_id VARCHAR(255) NOT NULL DEFAULT '', 
+    tax_category_id VARCHAR(255) NOT NULL DEFAULT '',
     now TIMESTAMP(6),
-    FOREIGN KEY (category) REFERENCES categories(id),
-    FOREIGN KEY (taxcat) REFERENCES taxcategories(id)
+    FOREIGN KEY (category) REFERENCES categories(id) ON DELETE CASCADE,
+    FOREIGN KEY (taxcat) REFERENCES taxcategories(id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS suppliers;
-
-CREATE TABLE suppliers (
-    id        VARCHAR(255) PRIMARY KEY,
-    searchkey VARCHAR(255) NOT NULL UNIQUE,
-    taxid     VARCHAR(255),
-    name      VARCHAR(255) NOT NULL,
-    maxdebt   DOUBLE PRECISION NOT NULL DEFAULT 0,
-    address   VARCHAR(255),
-    address2  VARCHAR(255),
-    postal    VARCHAR(255),
-    city      VARCHAR(255),
-    region    VARCHAR(255),
-    country   VARCHAR(255),
-    firstname VARCHAR(255),
-    lastname  VARCHAR(255),
-    email     VARCHAR(255),
-    phone     VARCHAR(255),
-    phone2    VARCHAR(255),
-    fax       VARCHAR(255),
-    notes     VARCHAR(255),
-    visible   BOOLEAN NOT NULL DEFAULT TRUE,
-    curdate   DATETIME,
-    curdebt   DOUBLE PRECISION DEFAULT 0,
-    vatid     VARCHAR(255)
+-- PRODUCTS_CAT (MUST come AFTER products)
+CREATE TABLE products_cat (
+    product VARCHAR(255) NOT NULL,
+    catorder INTEGER DEFAULT NULL,
+    PRIMARY KEY (product),
+    CONSTRAINT products_cat_fk_1 FOREIGN KEY (product) REFERENCES products(id) ON DELETE CASCADE
 );

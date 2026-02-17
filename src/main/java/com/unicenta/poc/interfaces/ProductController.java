@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import com.unicenta.poc.application.ProductService;
 import com.unicenta.poc.domain.Product;
 import com.unicenta.poc.interfaces.dto.ProductDto;
+import com.unicenta.poc.interfaces.dto.ProductRequestDto;
 import com.unicenta.poc.interfaces.dto.ProductResponseDto;
-
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -29,10 +29,15 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductDto productDto) {
-        System.out.println(">>>ProductController.productDto.categoryId: " + productDto.getCategoryId());
-        Product createdProduct = productService.createProduct(productDto);
-        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+    public ResponseEntity<?> createProduct(@Valid @RequestBody ProductRequestDto productDto) {
+        try {
+            System.out.println(">>>ProductController.productDto.categoryId: " + productDto.getCategoryId());
+            Product createdProduct = productService.createProduct(productDto);
+            return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+        } catch (Exception e) {
+            e.printStackTrace(); // Log the actual exception
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @GetMapping
@@ -68,7 +73,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable String id, @Valid @RequestBody ProductDto dto) {
-        System.out.println(">>> ProductController.updateProduct( id: " + id+" )");
+        System.out.println(">>> ProductController.updateProduct( id: " + id + " )");
         System.out.println(">>> ProductController.idSupplier: " + dto.getIdSupplier());
         return ResponseEntity.ok(productService.updateProduct(id, dto));
     }

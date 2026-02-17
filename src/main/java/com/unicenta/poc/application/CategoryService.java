@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.unicenta.poc.domain.Category;
 import com.unicenta.poc.domain.CategoryRepository;
 import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
+import java.util.Optional;
 
 
 @Service
@@ -32,6 +33,11 @@ public class CategoryService {
 
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
+    }
+    
+    public Optional<Category> findById(String id) {
+        return categoryRepository.findById(id);
+        
     }
 
     @Transactional(readOnly = true)

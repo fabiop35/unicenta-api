@@ -24,6 +24,7 @@ import com.unicenta.poc.domain.exceptions.ResourceNotFoundException;
 import com.unicenta.poc.interfaces.dto.ProductDto;
 import com.unicenta.poc.interfaces.dto.ProductResponseDto;
 import com.unicenta.poc.application.services.LookupService;
+import com.unicenta.poc.interfaces.dto.ProductRequestDto;
 
 @Service
 public class ProductService {
@@ -44,7 +45,7 @@ public class ProductService {
     }
 
     @Transactional
-    public Product createProduct(ProductDto dto) {
+    public Product createProduct(ProductRequestDto dto) {
         // First, ensure the referenced category and tax category exist to avoid foreign key errors
         categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cannot create product. Category with ID " + dto.getCategoryId() + " not found."));
@@ -57,7 +58,10 @@ public class ProductService {
         Product productRTN = productRepository.save(product);
         String idPRoduct = productRTN.getId();
         if (idPRoduct != null) {
-            int catorder = productRepository.getNextCatOrder();
+            Integer catorder = productRepository.getNextCatOrder();
+            if (catorder == null){
+                catorder = 1;
+            }
             productRepository.saveProductsCat(idPRoduct, catorder);
         }
 

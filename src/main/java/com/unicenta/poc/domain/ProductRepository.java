@@ -21,7 +21,7 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, S
     
     
     @Query("SELECT MAX(catorder)+1 FROM products_cat")
-    public int getNextCatOrder();
+    public Integer getNextCatOrder();
     
     @Modifying
     @Query("""

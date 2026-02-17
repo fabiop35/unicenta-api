@@ -13,7 +13,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table(name = "PRODUCTS")
+@Table(name = "products")
 @Data
 @NoArgsConstructor
 public class Product implements Persistable<String> {
