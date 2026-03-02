@@ -1,3 +1,4 @@
+-- src/test/resources/schema.sql
 // =================================================================
 // This property tells Spring Data JDBC to create the schema on startup for H2
 //
@@ -6,19 +7,20 @@
 // Spring Data JDBC requires this for the `create-drop` equivalent.
 // =================================================================
 
--- src/test/resources/schema.sql
 SET REFERENTIAL_INTEGRITY FALSE;
 
-DROP TABLE IF EXISTS stockdiary;
-DROP TABLE IF EXISTS stockcurrent;
-DROP TABLE IF EXISTS ticketlines;
-DROP TABLE IF EXISTS tickets;
+-- Drop tables with dependencies first
+DROP TABLE IF EXISTS constraint_69;
+DROP TABLE IF EXISTS taxcategories CASCADE;
+DROP TABLE IF EXISTS taxes;
+DROP TABLE IF EXISTS suppliers;
 DROP TABLE IF EXISTS products_cat;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS categories;
-DROP TABLE IF EXISTS taxcategories;
-DROP TABLE IF EXISTS taxes;
-DROP TABLE IF EXISTS suppliers;
+DROP TABLE IF EXISTS ticketlines;
+DROP TABLE IF EXISTS tickets;
+DROP TABLE IF EXISTS stockcurrent;
+DROP TABLE IF EXISTS stockdiary;
 
 SET REFERENTIAL_INTEGRITY TRUE;
 
@@ -121,3 +123,43 @@ CREATE TABLE products_cat (
     PRIMARY KEY (product),
     CONSTRAINT products_cat_fk_1 FOREIGN KEY (product) REFERENCES products(id) ON DELETE CASCADE
 );
+
+-- TICKETS
+CREATE TABLE tickets (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id VARCHAR(255),
+    status VARCHAR(50)
+);
+
+-- TICKET LINES
+CREATE TABLE ticketlines (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ticket_id BIGINT,
+    product_id VARCHAR(255),
+    quantity DECIMAL(19, 4) NOT NULL,
+    price DECIMAL(19, 4) NOT NULL,
+    FOREIGN KEY (ticket_id) REFERENCES tickets(id)
+);
+
+-- STOCK CURRENT
+CREATE TABLE stockcurrent (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id VARCHAR(255),
+    location_id VARCHAR(255),
+    quantity DECIMAL(19, 4) NOT NULL,
+    last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- STOCK DIARY
+CREATE TABLE stockdiary (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id VARCHAR(255),
+    location_id VARCHAR(255),
+    transaction_type ENUM('IN', 'OUT') NOT NULL,
+    quantity DECIMAL(19, 4) NOT NULL,
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+SET REFERENTIAL_INTEGRITY TRUE;
