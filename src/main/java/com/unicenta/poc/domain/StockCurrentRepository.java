@@ -1,5 +1,6 @@
 package com.unicenta.poc.domain;
 
+import com.unicenta.poc.interfaces.dto.InventoryValueByLocationDto;
 import com.unicenta.poc.interfaces.dto.StockCurrentDto;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
@@ -204,4 +205,48 @@ public interface StockCurrentRepository extends CrudRepository<StockCurrent, Str
             @Param("attributeSetInstanceId") String attributeSetInstanceId,
             @Param("units") Double units
     );
+
+    /**
+     * Inventory value at cost price (units * pricebuy) grouped by location,
+     * optionally restricted to a single location.
+     *
+     * @param locationId optional location filter (null or 'ALL' = all
+     * locations)
+     * @return per-location inventory value breakdown
+     */
+    @Query("""
+        SELECT
+            sc.location AS location_id,
+            l.name AS location_name,
+            COALESCE(SUM(sc.units * p.pricebuy), 0) AS total_value,
+            COUNT(*) AS item_count,
+            COUNT(DISTINCT sc.product) AS product_count
+        FROM
+            stockcurrent sc
+        INNER JOIN
+            products p ON p.id = sc.product
+        INNER JOIN
+            locations l ON l.id = sc.location
+        WHERE
+            :locationId IS NULL OR :locationId = 'ALL' OR sc.location = :locationId
+        GROUP BY
+            sc.location, l.name
+        """)
+    List<InventoryValueByLocationDto> inventoryValueByLocation(
+            @Param("locationId") String locationId);
+
+    /**
+     * Number of distinct products with stock, optionally restricted to a
+     * single location.
+     *
+     * @param locationId optional location filter (null or 'ALL' = all
+     * locations)
+     * @return distinct product count
+     */
+    @Query("""
+        SELECT COUNT(DISTINCT sc.product)
+        FROM stockcurrent sc
+        WHERE :locationId IS NULL OR :locationId = 'ALL' OR sc.location = :locationId
+        """)
+    Long countDistinctProducts(@Param("locationId") String locationId);
 }

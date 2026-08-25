@@ -38,10 +38,10 @@ public class StockService {
     private final SupplierRepository supplierRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
-    
+
     @Autowired
     private CacheManager cacheManager;
-    
+
     public StockService(
             StockCurrentRepository stockCurrentRepository,
             StockDiaryRepository stockDiaryRepository,
@@ -197,8 +197,23 @@ public class StockService {
 
     public InventoryValuationDto getInventoryValuation() {
         List<StockCurrent> stockCurrentList = stockCurrentRepository.findAllProjected();
+
+        // Cost basis per product derived from priced stock-in history
+        // (stockdiary): weighted average unit cost plus lifetime invested
+        // amount. Falls back to the catalog pricebuy when the product has
+        // no priced stock-in movements.
+        Map<String, ProductCostBasis> costByProduct = stockDiaryRepository.findWeightedAverageCostByProduct().stream()
+                .filter(cost -> cost.getAvgCost() != null)
+                .collect(Collectors.toMap(
+                        ProductCostBasis::getProductId,
+                        cost -> cost,
+                        (a, b) -> a));
+
         List<InventoryItemValuationDto> itemValues = new ArrayList<>();
         double totalValue = 0;
+        double totalInvested = 0;
+        double totalRetailValue = 0;
+        double totalPotentialMargin = 0;
 
         for (StockCurrent stock : stockCurrentList) {
             Optional<Product> productOptional = productRepository.findById(stock.getProductId());
@@ -207,21 +222,40 @@ public class StockService {
             }
 
             Product product = productOptional.get();
-            double itemValue = stock.getUnits() * product.getPricebuy();
+            ProductCostBasis costBasis = costByProduct.get(stock.getProductId());
+            boolean hasDiaryCost = costBasis != null;
+            double costPrice = hasDiaryCost ? costBasis.getAvgCost() : product.getPricebuy();
+            double invested = hasDiaryCost ? costBasis.getInvested() : 0.0;
+            double itemValue = stock.getUnits() * costPrice;
+            // Retail side uses the current catalog selling price (tax-exclusive)
+            double priceSell = product.getPricesell();
+            double retailValue = stock.getUnits() * priceSell;
+            double potentialMargin = retailValue - itemValue;
             totalValue += itemValue;
+            totalInvested += invested;
+            totalRetailValue += retailValue;
+            totalPotentialMargin += potentialMargin;
 
             InventoryItemValuationDto itemValuation = new InventoryItemValuationDto();
             itemValuation.setProductId(product.getId());
             itemValuation.setProductName(product.getName());
             itemValuation.setAttributeSetInstanceId(stock.getAttributeSetInstanceId());
             itemValuation.setUnits(stock.getUnits());
-            itemValuation.setCostPrice(product.getPricebuy());
+            itemValuation.setCostPrice(costPrice);
+            itemValuation.setCostSource(hasDiaryCost ? "STOCKDIARY_WAC" : "PRICEBUY_FALLBACK");
+            itemValuation.setInvested(invested);
             itemValuation.setItemValue(itemValue);
+            itemValuation.setPriceSell(priceSell);
+            itemValuation.setRetailValue(retailValue);
+            itemValuation.setPotentialMargin(potentialMargin);
             itemValues.add(itemValuation);
         }
 
         InventoryValuationDto valuation = new InventoryValuationDto();
         valuation.setTotalValue(totalValue);
+        valuation.setTotalInvested(totalInvested);
+        valuation.setTotalRetailValue(totalRetailValue);
+        valuation.setTotalPotentialMargin(totalPotentialMargin);
         valuation.setItems(itemValues);
         return valuation;
     }
@@ -396,12 +430,11 @@ public class StockService {
 
         //Update the product pricebuy, pricesell, supplier
         productRepository.updatePricebuyAndSupplier(request.productId(), request.price(), request.pricesell(), request.supplier());
-        
+
         /*Cache pricebuyCache = cacheManager.getCache("pricebuy");
         if (pricebuyCache != null) {
             pricebuyCache.clear();
         }*/
-        
         return savedDiary;
     }
 }

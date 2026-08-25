@@ -108,6 +108,27 @@ public interface StockDiaryRepository extends CrudRepository<StockDiary, String>
             @Param("endDate") LocalDateTime endDate);
 
     /**
+     * Cost basis per product derived from stock-in movements. In this
+     * database stock-ins are recorded as positive units carrying the unit
+     * price actually paid, regardless of reason code (which is not
+     * reliable). Out-movements record retail prices and are excluded.
+     *
+     * Returns the weighted average cost and the lifetime invested amount
+     * (sum of everything ever paid for purchased units).
+     */
+    @Query("""
+        SELECT product AS product_id,
+               SUM(price * units) / SUM(units) AS avg_cost,
+               SUM(price * units) AS invested
+        FROM stockdiary
+        WHERE units > 0
+          AND price IS NOT NULL
+          AND price > 0
+        GROUP BY product
+        """)
+    List<ProductCostBasis> findWeightedAverageCostByProduct();
+
+    /**
      * Find by ID.
      */
     @Override

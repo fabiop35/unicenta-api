@@ -7,5 +7,8 @@ import java.util.List;
 public class InventoryValuationDto {
 
     private double totalValue;
+    private double totalInvested;
+    private double totalRetailValue;
+    private double totalPotentialMargin;
     private List<InventoryItemValuationDto> items;
 }

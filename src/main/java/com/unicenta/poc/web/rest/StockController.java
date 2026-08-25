@@ -1,8 +1,11 @@
 package com.unicenta.poc.web.rest;
 
+import com.unicenta.poc.application.InventoryValuationService;
 import com.unicenta.poc.application.StockService;
 import com.unicenta.poc.domain.Location;
 import com.unicenta.poc.domain.StockDiary;
+import com.unicenta.poc.interfaces.dto.InventoryValueByLocationDto;
+import com.unicenta.poc.interfaces.dto.InventoryValueDto;
 import com.unicenta.poc.interfaces.dto.InventoryValuationDto;
 import com.unicenta.poc.interfaces.dto.StockAdjustmentRequest;
 import com.unicenta.poc.interfaces.dto.StockCurrentDto;
@@ -22,9 +25,11 @@ import java.util.List;
 public class StockController {
 
     private final StockService stockService;
+    private final InventoryValuationService inventoryValuationService;
 
-    public StockController(StockService stockService) {
+    public StockController(StockService stockService, InventoryValuationService inventoryValuationService) {
         this.stockService = stockService;
+        this.inventoryValuationService = inventoryValuationService;
     }
     
     // Current stock operations
@@ -71,6 +76,30 @@ public class StockController {
     @GetMapping("/valuation")
     public InventoryValuationDto getInventoryValuation() {
         return stockService.getInventoryValuation();
+    }
+
+    /**
+     * Total value of the inventory at cost price, computed in the database
+     * with a single aggregate query. Optionally filtered by location.
+     *
+     * @param locationId optional location filter (blank or "ALL" = all
+     * locations)
+     * @return the inventory value summary with a per-location breakdown
+     */
+    @GetMapping("/valuation/summary")
+    public InventoryValueDto getInventoryValueSummary(
+            @RequestParam(required = false) String locationId) {
+        return inventoryValuationService.getInventoryValue(locationId);
+    }
+
+    /**
+     * Inventory value at cost price grouped by location.
+     *
+     * @return per-location inventory value breakdown
+     */
+    @GetMapping("/valuation/by-location")
+    public List<InventoryValueByLocationDto> getInventoryValueByLocation() {
+        return inventoryValuationService.getInventoryValueByLocation(null);
     }
 
     @GetMapping("/locations")
